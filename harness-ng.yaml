@@ -1,10 +1,10 @@
 apiVersion: v1
 data:
   ACCESS_CONTROL_PREFERENCE_ENABLED: "true"
-  ACCESS_CONTROL_SERVICE_BASE_URL: 35.202.24.14/authz/api/
-  ACCOUNT_CLIENT_BASE_URL: 35.202.24.14/api/
+  ACCESS_CONTROL_SERVICE_BASE_URL: http://harness-url/authz/api/
+  ACCOUNT_CLIENT_BASE_URL: http://harness-url/api/
   AGGREGATOR_ENABLED: "true"
-  AUDIT_CLIENT_BASE_URL: 35.202.24.14/audit/api/
+  AUDIT_CLIENT_BASE_URL: http://harness-url/audit/api/
   DEPLOY_MODE: KUBERNETES_ONPREM
   DISTRIBUTED_LOCK_IMPLEMENTATION: redis
   ENABLE_ACCESS_CONTROL: "false"
@@ -13,32 +13,32 @@ data:
   EVENTS_CONFIG_REDIS_SENTINELS: redis://redis-sentinel-harness-announce-0.harness:26379,redis://redis-sentinel-harness-announce-1.harness:26379,redis://redis-sentinel-harness-announce-2.harness:26379
   EVENTS_CONFIG_SENTINEL_MASTER_NAME: harness-redis
   EVENTS_CONFIG_USE_SENTINEL: "true"
-  FEATURE_FLAG_CLIENT_BASE_URL: 35.202.24.14/api/
+  FEATURE_FLAG_CLIENT_BASE_URL: http://harness-url/api/
   GOOGLE_APPLICATION_CREDENTIALS: /opt/harness/monitoring/stackdriver.json
   LOCK_CONFIG_REDIS_SENTINELS: redis://redis-sentinel-harness-announce-0.harness:26379,redis://redis-sentinel-harness-announce-1.harness:26379,redis://redis-sentinel-harness-announce-2.harness:26379
   LOCK_CONFIG_SENTINEL_MASTER_NAME: harness-redis
   LOCK_CONFIG_USE_SENTINEL: "true"
   LOGGING_LEVEL: INFO
-  MONGODB_HOSTS: mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc:27017
+  MONGODB_HOSTS: mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc:27017,mongodb-replicaset-chart-1.mongodb-replicaset-chart.harness.svc:27017,mongodb-replicaset-chart-2.mongodb-replicaset-chart.harness.svc:27017
   MONGODB_SSL_ENABLED: "false"
   MONGODB_USER: admin
   NOTIFICATION_ENVIRONMENT: ONPREM
   NOTIFICATION_SLACK_WEBHOOK_URL: ""
   OFFSET_FLUSH_INTERVAL_MS: "10000"
-  ORGANIZATION_CLIENT_BASE_URL: 35.202.24.14/ng/api/
-  PROJECT_CLIENT_BASE_URL: 35.202.24.14/ng/api/
-  RESOURCE_GROUP_CLIENT_BASE_URL: 35.202.24.14/resourcegroup/api/
+  ORGANIZATION_CLIENT_BASE_URL: http://harness-url/ng/api/
+  PROJECT_CLIENT_BASE_URL: http://harness-url/ng/api/
+  RESOURCE_GROUP_CLIENT_BASE_URL: http://harness-url/resourcegroup/api/
   RESOURCE_GROUP_ITERATOR_ENABLED: "true"
   RESOURCE_GROUP_ITERATOR_INTERVAL: "3600"
   SCOPE_ITERATOR_ENABLED: "true"
   SCOPE_ITERATOR_INTERVAL: "3600"
-  SERVICEACCOUNT_CLIENT_BASE_URL: 35.202.24.14/ng/api/
+  SERVICEACCOUNT_CLIENT_BASE_URL: http://harness-url/ng/api/
   SERVICEACCOUNT_ITERATOR_ENABLED: "true"
   SERVICEACCOUNT_ITERATOR_INTERVAL: "3600"
   SUPPORTPREFERENCE_ITERATOR_ENABLED: "true"
   SUPPORTPREFERENCE_ITERATOR_INTERVAL: "600"
-  USER_CLIENT_BASE_URL: 35.202.24.14/ng/api/
-  USER_GROUP_CLIENT_BASE_URL: 35.202.24.14/ng/api/
+  USER_CLIENT_BASE_URL: http://harness-url/ng/api/
+  USER_GROUP_CLIENT_BASE_URL: http://harness-url/ng/api/
   USER_GROUP_ITERATOR_ENABLED: "true"
   USER_GROUP_ITERATOR_INTERVAL: "3600"
   USER_ITERATOR_ENABLED: "true"
@@ -70,7 +70,7 @@ metadata:
 apiVersion: v1
 data:
   ADDON_IMAGE: harness/ci-addon:release-97
-  API_URL: 35.202.24.14/ng/#/
+  API_URL: http://harness-url/ng/#/
   ARTIFACTORY_UPLOAD_IMAGE: plugins/artifactory:1.0.4
   CACHE_BACKEND: REDIS
   CACHE_CONFIG_REDIS_SENTINELS: redis://redis-sentinel-harness-announce-0.harness:26379,redis://redis-sentinel-harness-announce-1.harness:26379,redis://redis-sentinel-harness-announce-2.harness:26379
@@ -90,20 +90,20 @@ data:
   GIT_CLONE_IMAGE: harness/drone-git:1.0.6-rootless-linux-amd64
   GRPC_SERVER_PORT: "9979"
   LE_IMAGE: harness/ci-lite-engine:release-34
-  LOG_SERVICE_ENDPOINT: 35.202.24.14/log-service/
+  LOG_SERVICE_ENDPOINT: http://harness-url/log-service/
   LOGGING_LEVEL: INFO
   MANAGER_AUTHORITY: default-authority.harness.io
   MANAGER_TARGET: harness-manager:9879
-  MANAGER_URL: 35.202.24.14/api/
-  MEMORY: "1000"
-  NG_MANAGER_URL: 35.202.24.14/ng/api/
+  MANAGER_URL: http://harness-url/api/
+  MEMORY: "2096"
+  NG_MANAGER_URL: http://harness-url/ng/api/
   PMS_AUTHORITY: default-authority.harness.io
   PMS_TARGET: pipeline-service:12011
   S3_CACHE_IMAGE: plugins/cache:1.3.5
   S3_UPLOAD_IMAGE: plugins/s3:1.0.3
   SCM_SERVICE_URI: scm:8091
   SHOULD_CONFIGURE_WITH_PMS: "true"
-  TI_SERVICE_ENDPOINT: 35.202.24.14/ti-service/
+  TI_SERVICE_ENDPOINT: http://harness-url/ti-service/
   USE_REDIS_FOR_SDK_RESPONSE_EVENTS: "true"
 kind: ConfigMap
 metadata:
@@ -116,7 +116,7 @@ metadata:
 ---
 apiVersion: v1
 data:
-  ACCESS_CONTROL_BASE_URL: 35.202.24.14/authz/api/
+  ACCESS_CONTROL_BASE_URL: http://harness-url/authz/api/
   ACCESS_CONTROL_ENABLED: "true"
   CACHE_BACKEND: REDIS
   CACHE_CONFIG_REDIS_SENTINELS: redis://redis-sentinel-harness-announce-0.harness:26379,redis://redis-sentinel-harness-announce-1.harness:26379,redis://redis-sentinel-harness-announce-2.harness:26379
@@ -131,15 +131,15 @@ data:
   EVENTS_FRAMEWORK_USE_SENTINEL: "true"
   GRPC_SERVER_PORT: "9979"
   LOGGING_LEVEL: INFO
-  MANAGER_CLIENT_BASEURL: 35.202.24.14/
-  MANAGER_URL: 35.202.24.14/api/
-  MEMORY: "1024"
+  MANAGER_CLIENT_BASEURL: http://harness-url/
+  MANAGER_URL: http://harness-url/api/
+  MEMORY: "2048"
   MOCK_ACCESS_CONTROL_SERVICE: "false"
-  NG_MANAGER_URL: 35.202.24.14/ng/api/
-  NOTIFICATION_BASE_URL: 35.202.24.14/notifications/api/
+  NG_MANAGER_URL: http://harness-url/ng/api/
+  NOTIFICATION_BASE_URL: http://harness-url/notifications/api/
   PMS_AUTHORITY: default-authority.harness.io
   PMS_TARGET: pipeline-service:12011
-  PORTAL_URL: 35.202.24.14/api/
+  PORTAL_URL: http://harness-url/api/
   SHOULD_CONFIGURE_WITH_PMS: "true"
   STACK_DRIVER_LOGGING_ENABLED: "false"
   VERIFICATION_PORT: "6060"
@@ -171,7 +171,7 @@ apiVersion: v1
 data:
   LOG_SERVICE_DISABLE_AUTH: "true"
   LOG_SERVICE_S3_BUCKET: logs
-  LOG_SERVICE_S3_ENDPOINT: http://http://35.202.24.14:9000
+  LOG_SERVICE_S3_ENDPOINT: http://harness-url:9000
   LOG_SERVICE_S3_PATH_STYLE: "true"
   LOG_SERVICE_S3_REGION: us-east-1
 kind: ConfigMap
@@ -277,7 +277,7 @@ metadata:
 ---
 apiVersion: v1
 data:
-  API_URL: 35.202.24.14/gateway
+  API_URL: http://harness-url/gateway
   HARNESS_ENABLE_NG_AUTH_UI_PLACEHOLDER: "true"
 kind: ConfigMap
 metadata:
@@ -290,12 +290,12 @@ metadata:
 ---
 apiVersion: v1
 data:
-  ACCESS_CONTROL_BASE_URL: 35.202.24.14/authz/api/
+  ACCESS_CONTROL_BASE_URL: http://harness-url/authz/api/
   ACCESS_CONTROL_ENABLED: "true"
-  AUDIT_CLIENT_BASEURL: 35.202.24.14/audit/api/
+  AUDIT_CLIENT_BASEURL: http://harness-url/audit/api/
   AUDIT_ENABLED: "true"
   CACHE_BACKEND: REDIS
-  CURRENT_GEN_UI_URL: 35.202.24.14/#/
+  CURRENT_GEN_UI_URL: http://harness-url/#/
   DEPLOY_MODE: KUBERNETES_ONPREM
   ENABLE_DASHBOARD_TIMESCALE: "true"
   ENABLE_DEFAULT_RESOURCE_GROUP_CREATION: "true"
@@ -307,31 +307,31 @@ data:
   LOCK_CONFIG_REDIS_SENTINELS: redis://redis-sentinel-harness-announce-0.harness:26379,redis://redis-sentinel-harness-announce-1.harness:26379,redis://redis-sentinel-harness-announce-2.harness:26379
   LOCK_CONFIG_SENTINEL_MASTER_NAME: harness-redis
   LOCK_CONFIG_USE_SENTINEL: "true"
-  LOG_STREAMING_SERVICE_BASEURL: 35.202.24.14/log-service/
+  LOG_STREAMING_SERVICE_BASEURL: http://harness-url/log-service/
   LOG_STREAMING_SERVICE_TOKEN: c76e567a-b341-404d-a8dd-d9738714eb82
   LOGGING_LEVEL: INFO
   MANAGER_AUTHORITY: default-authority.harness.io
-  MANAGER_CLIENT_BASEURL: 35.202.24.14/api/
+  MANAGER_CLIENT_BASEURL: http://harness-url/api/
   MANAGER_TARGET: harness-manager:9879
-  MANAGER_UI_URL: 35.202.24.14
+  MANAGER_UI_URL: http://harness-url
   MEMORY: 4096m
   MOCK_ACCESS_CONTROL_SERVICE: "false"
-  NG_MANAGER_API_URL: 35.202.24.14/ng/api/
+  NG_MANAGER_API_URL: http://harness-url/ng/api/
   NG_MANAGER_AUTHORITY: default-authority.harness.io
-  NG_MANAGER_CLIENT_BASEURL: 35.202.24.14/ng/api/
+  NG_MANAGER_CLIENT_BASEURL: http://harness-url/ng/api/
   NG_MANAGER_TARGET: ng-manager:13002
-  NG_MANAGER_UI_URL: 35.202.24.14/ng/#/
+  NG_MANAGER_UI_URL: http://harness-url/ng/#/
   PMS_AUTHORITY: default-authority.harness.io
   PMS_GITSYNC_AUTHORITY: default-authority.harness.io
   PMS_GITSYNC_TARGET: pipeline-service:14002
   PMS_TARGET: pipeline-service:12011
-  RESOURCE_GROUP_BASE_URL: 35.202.24.14/resourcegroup/api/
+  RESOURCE_GROUP_BASE_URL: http://harness-url/resourcegroup/api/
   SCM_SERVICE_URI: scm:8091
   SHOULD_CONFIGURE_WITH_PMS: "true"
   TEMPLATE_GITSYNC_AUTHORITY: default-authority.harness.io
   TEMPLATE_GITSYNC_TARGET: template-service:16002
   USE_REDIS_FOR_SDK_RESPONSE_EVENTS: "true"
-  WEBHOOK_BASE_URL: 35.202.24.14
+  WEBHOOK_BASE_URL: http://harness-url
 kind: ConfigMap
 metadata:
   annotations:
@@ -343,7 +343,7 @@ metadata:
 ---
 apiVersion: v1
 data:
-  ACCESS_CONTROL_BASE_URL: 35.202.24.14/authz/api/
+  ACCESS_CONTROL_BASE_URL: http://harness-url/authz/api/
   ACCESS_CONTROL_ENABLED: "true"
   AUTH_ENABLED: "true"
   CACHE_BACKEND: REDIS
@@ -351,10 +351,10 @@ data:
   CACHE_CONFIG_SENTINEL_MASTER_NAME: harness-redis
   CACHE_CONFIG_USE_SENTINEL: "true"
   CI_MANAGER_AUTHORITY: default-authority.harness.io
-  CI_MANAGER_BASE_URL: 35.202.24.14/ci/
+  CI_MANAGER_BASE_URL: http://harness-url/ci/
   CI_MANAGER_TARGET: ci-manager:9979
-  CUSTOM_TRIGGER_BASEURL: 35.202.24.14/pipeline/api/
-  CV_MANAGER_BASE_URL: 35.202.24.14/cv/api/
+  CUSTOM_TRIGGER_BASEURL: http://harness-url/pipeline/api/
+  CV_MANAGER_BASE_URL: http://harness-url/cv/api/
   CVNG_MANAGER_AUTHORITY: default-authority.harness.io
   CVNG_MANAGER_TARGET: cv-nextgen:9979
   DEPLOY_MODE: KUBERNETES_ONPREM
@@ -364,29 +364,29 @@ data:
   EVENTS_FRAMEWORK_SENTINEL_MASTER_NAME: harness-redis
   EVENTS_FRAMEWORK_USE_SENTINEL: "true"
   GRPC_SERVER_PORT: "12011"
-  LOG_STREAMING_SERVICE_BASEURL: 35.202.24.14/log-service/
+  LOG_STREAMING_SERVICE_BASEURL: http://harness-url/log-service/
   LOGGING_LEVEL: INFO
   MANAGER_AUTHORITY: default-authority.harness.io
-  MANAGER_BASE_URL: 35.202.24.14/api/
-  MANAGER_CLIENT_BASEURL: 35.202.24.14/api/
+  MANAGER_BASE_URL: http://harness-url/api/
+  MANAGER_CLIENT_BASEURL: http://harness-url/api/
   MANAGER_TARGET: harness-manager:9879
-  MEMORY: 1024m
+  MEMORY: 4096m
   MOCK_ACCESS_CONTROL_SERVICE: "false"
   NG_MANAGER_AUTHORITY: default-authority.harness.io
-  NG_MANAGER_BASE_URL: 35.202.24.14/ng/api/
+  NG_MANAGER_BASE_URL: http://harness-url/ng/api/
   NG_MANAGER_GITSYNC_AUTHORITY: default-authority.harness.io
   NG_MANAGER_GITSYNC_TARGET: ng-manager:13002
   NG_MANAGER_TARGET: ng-manager:9979
-  NOTIFICATION_BASE_URL: 35.202.24.14/notifications/api/
-  PIPELINE_SERVICE_BASE_URL: 35.202.24.14/ng/#
-  PMS_API_BASE_URL: 35.202.24.14/pipeline/api/
+  NOTIFICATION_BASE_URL: http://harness-url/notifications/api/
+  PIPELINE_SERVICE_BASE_URL: http://harness-url/ng/#
+  PMS_API_BASE_URL: http://harness-url/pipeline/api/
   SCM_SERVICE_URI: scm:8091
   SHOULD_USE_INSTANCE_CACHE: "false"
-  TEMPLATE_SERVICE_ENDPOINT: 35.202.24.14/template/api/
+  TEMPLATE_SERVICE_ENDPOINT: http://harness-url/template/api/
   USE_REDIS_FOR_INTERRUPTS: "true"
   USE_REDIS_FOR_ORCHESTRATION_EVENTS: "true"
   USE_REDIS_FOR_SDK_RESPONSE_EVENTS: "true"
-  WEBHOOK_TRIGGER_BASEURL: 35.202.24.14/ng/api/
+  WEBHOOK_TRIGGER_BASEURL: http://harness-url/ng/api/
 kind: ConfigMap
 metadata:
   annotations:
@@ -398,9 +398,9 @@ metadata:
 ---
 apiVersion: v1
 data:
-  ACCESS_CONTROL_BASE_URL: 35.202.24.14/authz/api/
+  ACCESS_CONTROL_BASE_URL: http://harness-url/authz/api/
   ACCESS_CONTROL_ENABLED: "true"
-  AUDIT_CLIENT_BASEURL: 35.202.24.14/audit/api/
+  AUDIT_CLIENT_BASEURL: http://harness-url/audit/api/
   AUDIT_ENABLED: "true"
   DEPLOY_MODE: KUBERNETES_ONPREM
   DISTRIBUTED_LOCK_IMPLEMENTATION: REDIS
@@ -415,19 +415,19 @@ data:
   LOCK_CONFIG_SENTINEL_MASTER_NAME: harness-redis
   LOCK_CONFIG_USE_SENTINEL: "true"
   LOGGING_LEVEL: INFO
-  MANAGER_CLIENT_BASEURL: 35.202.24.14/api/
+  MANAGER_CLIENT_BASEURL: http://harness-url/api/
   MOCK_ACCESS_CONTROL_SERVICE: "false"
-  NG_MANAGER_CLIENT_BASEURL: 35.202.24.14/ng/api/
-  PIPELINE_SERVICE_CLIENT_BASEURL: 35.202.24.14/pipeline/api/
-  RBAC_URL: 35.202.24.14/ng/api/
-  RESOURCE_GROUP_CLIENT_BASE_URL: 35.202.24.14/resourcegroup/api/
+  NG_MANAGER_CLIENT_BASEURL: http://harness-url/ng/api/
+  PIPELINE_SERVICE_CLIENT_BASEURL: http://harness-url/pipeline/api/
+  RBAC_URL: http://harness-url/ng/api/
+  RESOURCE_GROUP_CLIENT_BASE_URL: http://harness-url/resourcegroup/api/
   SMTP_HOST: ""
   SMTP_PASSWORD: ""
   SMTP_PORT: "465"
   SMTP_USE_SSL: "true"
   SMTP_USERNAME: ""
-  TEMPLATE_SERVICE_BASE_URL: 35.202.24.14/templates/api/
-  TEMPLATE_SERVICE_CLIENT_BASEURL: 35.202.24.14/template/api/
+  TEMPLATE_SERVICE_BASE_URL: http://harness-url/templates/api/
+  TEMPLATE_SERVICE_CLIENT_BASEURL: http://harness-url/template/api/
 kind: ConfigMap
 metadata:
   annotations:
@@ -439,9 +439,9 @@ metadata:
 ---
 apiVersion: v1
 data:
-  ACCESS_CONTROL_BASE_URL: 35.202.24.14/authz/api/
+  ACCESS_CONTROL_BASE_URL: http://harness-url/authz/api/
   ACCESS_CONTROL_ENABLED: "true"
-  AUDIT_SERVICE_BASE_URL: 35.202.24.14/audit/api/
+  AUDIT_SERVICE_BASE_URL: http://harness-url/audit/api/
   CACHE_BACKEND: REDIS
   CACHE_CONFIG_REDIS_SENTINELS: redis://redis-sentinel-harness-announce-0.harness:26379,redis://redis-sentinel-harness-announce-1.harness:26379,redis://redis-sentinel-harness-announce-2.harness:26379
   CACHE_CONFIG_SENTINEL_MASTER_NAME: harness-redis
@@ -458,8 +458,8 @@ data:
   LOGGING_LEVEL: INFO
   MANAGER_AUTHORITY: default-authority.harness.io
   MANAGER_TARGET: harness-manager:9879
-  MEMORY: 512m
-  NG_MANAGER_BASE_URL: 35.202.24.14/ng/api/
+  MEMORY: 1024m
+  NG_MANAGER_BASE_URL: http://harness-url/ng/api/
   NG_MANAGER_GITSYNC_AUTHORITY: default-authority.harness.io
   NG_MANAGER_GITSYNC_TARGET: ng-manager:13002
   PMS_GRPC_AUTHORITY: default-authority.harness.io
@@ -543,9 +543,9 @@ metadata:
   name: access-control
 stringData:
   IDENTITY_SERVICE_SECRET: HVSKUYqD4e5Rxu12hFDdCJKGM64sxgEynvdDhaOHaTHhwwn0K4Ttr0uoOxSsEVYNrUU=
-  MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/accesscontrol?authSource=admin
+  MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.harness.svc:27017/accesscontrol?replicaSet=rs0&authSource=admin
   MONGODB_PASSWORD: CA8FMywpbM
-  OFFSET_STORAGE_FILE_FILENAME: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/accesscontrol?authSource=admin
+  OFFSET_STORAGE_FILE_FILENAME: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.harness.svc:27017/accesscontrol?replicaSet=rs0&authSource=admin
 ---
 apiVersion: v1
 kind: Secret
@@ -557,11 +557,11 @@ metadata:
     kots.io/backup: velero
   name: change-data-capture
 stringData:
-  CDC_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/change-data-capture?authSource=admin
-  EVENTS_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/events?authSource=admin
-  MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/harness?authSource=admin
-  NG_HARNESS_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/ng-harness?authSource=admin
-  PMS_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/pms-harness?authSource=admin
+  CDC_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.harness.svc:27017/change-data-capture?replicaSet=rs0&authSource=admin
+  EVENTS_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.harness.svc:27017/events?replicaSet=rs0&authSource=admin
+  MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.harness.svc:27017/harness?replicaSet=rs0&authSource=admin
+  NG_HARNESS_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.harness.svc:27017/ng-harness?replicaSet=rs0&authSource=admin
+  PMS_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.harness.svc:27017/pms-harness?replicaSet=rs0&authSource=admin
   TIMESCALEDB_PASSWORD: kXsMSRiREYXiMciUwMdj
   TIMESCALEDB_URI: jdbc:postgresql://timescaledb-single-chart.harness:5432/harness
   TIMESCALEDB_USERNAME: postgres
@@ -577,10 +577,10 @@ metadata:
     kots.io/backup: velero
   name: ci-manager
 stringData:
-  CIMANAGER_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/harness-ci?authSource=admin
+  CIMANAGER_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.harness.svc:27017/harness-ci?replicaSet=rs0&authSource=admin
   LOG_SERVICE_GLOBAL_TOKEN: c76e567a-b341-404d-a8dd-d9738714eb82
-  MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/harness?authSource=admin
-  PMS_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/pms-harness?authSource=admin
+  MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.harness.svc:27017/harness?replicaSet=rs0&authSource=admin
+  PMS_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.harness.svc:27017/pms-harness?replicaSet=rs0&authSource=admin
   TI_SERVICE_GLOBAL_TOKEN: 78d16b66-4b4c-11eb-8377-acde48001122
   TIMESCALE_PASSWORD: kXsMSRiREYXiMciUwMdj
   TIMESCALE_URI: jdbc:postgresql://timescaledb-single-chart.harness:5432/harness
@@ -597,9 +597,9 @@ metadata:
     kots.io/backup: velero
   name: cv-nextgen
 stringData:
-  MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/cvng-harness?authSource=admin
-  NOTIFICATION_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/notifications?authSource=admin
-  PMS_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/pms-harness?authSource=admin
+  MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.harness.svc:27017/cvng-harness?replicaSet=rs0&authSource=admin
+  NOTIFICATION_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.harness.svc:27017/notifications?replicaSet=rs0&authSource=admin
+  PMS_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.harness.svc:27017/pms-harness?replicaSet=rs0&authSource=admin
 type: Opaque
 ---
 apiVersion: v1
@@ -655,9 +655,9 @@ metadata:
     kots.io/backup: velero
   name: ng-manager
 stringData:
-  MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/ng-harness?authSource=admin
-  NOTIFICATION_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/notifications?authSource=admin
-  PMS_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/pms-harness?authSource=admin
+  MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.harness.svc:27017/ng-harness?replicaSet=rs0&authSource=admin
+  NOTIFICATION_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.harness.svc:27017/notifications?replicaSet=rs0&authSource=admin
+  PMS_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.harness.svc:27017/pms-harness?replicaSet=rs0&authSource=admin
   TIMESCALE_PASSWORD: kXsMSRiREYXiMciUwMdj
   TIMESCALE_URI: jdbc:postgresql://timescaledb-single-chart.harness:5432/harness
   TIMESCALEDB_USERNAME: postgres
@@ -673,8 +673,8 @@ metadata:
     kots.io/backup: velero
   name: pipeline-service
 stringData:
-  MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/pms-harness?authSource=admin
-  NOTIFICATION_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/notifications?authSource=admin
+  MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.harness.svc:27017/pms-harness?replicaSet=rs0&authSource=admin
+  NOTIFICATION_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.harness.svc:27017/notifications?replicaSet=rs0&authSource=admin
   TIMESCALE_PASSWORD: kXsMSRiREYXiMciUwMdj
   TIMESCALE_URI: jdbc:postgresql://timescaledb-single-chart.harness:5432/harness
   TIMESCALEDB_USERNAME: postgres
@@ -690,9 +690,9 @@ metadata:
     kots.io/backup: velero
   name: platform-service
 stringData:
-  AUDIT_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/audits?authSource=admin
-  MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/notifications?authSource=admin
-  RESOURCE_GROUP_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/resource-groups?authSource=admin
+  AUDIT_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.harness.svc:27017/audits?replicaSet=rs0&authSource=admin
+  MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.harness.svc:27017/notifications?replicaSet=rs0&authSource=admin
+  RESOURCE_GROUP_MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.harness.svc:27017/resource-groups?replicaSet=rs0&authSource=admin
 type: Opaque
 ---
 apiVersion: v1
@@ -705,7 +705,7 @@ metadata:
     kots.io/backup: velero
   name: template-service
 stringData:
-  MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/template-harness?authSource=admin
+  MONGO_URI: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.harness.svc:27017/template-harness?replicaSet=rs0&authSource=admin
 type: Opaque
 ---
 apiVersion: v1
@@ -719,7 +719,7 @@ metadata:
   name: ti-service
 stringData:
   TI_SERVICE_GLOBAL_TOKEN: 78d16b66-4b4c-11eb-8377-acde48001122
-  TI_SERVICE_MONGODB_CONN_STR: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/ti-harness?authSource=admin
+  TI_SERVICE_MONGODB_CONN_STR: mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.harness.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.harness.svc:27017/ti-harness?replicaSet=rs0&authSource=admin
   TI_SERVICE_TIMESCALE_PASSWORD: kXsMSRiREYXiMciUwMdj
   TI_SERVICE_TIMESCALE_USERNAME: postgres
   TSDB_URL: postgres://postgres:kXsMSRiREYXiMciUwMdj@timescaledb-single-chart.harness:5432
@@ -1032,6 +1032,13 @@ spec:
         kots.io/backup: velero
         kots.io/placeholder: "true"
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app: access-control
+            topologyKey: kubernetes.io/hostname
       containers:
       - envFrom:
         - configMapRef:
@@ -1063,11 +1070,11 @@ spec:
           timeoutSeconds: 20
         resources:
           limits:
-            cpu: "0.5"
-            memory: 512Mi
+            cpu: "1"
+            memory: 3072Mi
           requests:
-            cpu: "0.5"
-            memory: 512Mi
+            cpu: "1"
+            memory: 3072Mi
         securityContext:
           runAsNonRoot: true
           runAsUser: 65534
@@ -1107,6 +1114,13 @@ spec:
         kots.io/backup: velero
         kots.io/placeholder: "true"
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app: change-data-capture
+            topologyKey: kubernetes.io/hostname
       containers:
       - envFrom:
         - configMapRef:
@@ -1134,10 +1148,10 @@ spec:
           timeoutSeconds: 10
         resources:
           limits:
-            cpu: "0.5"
+            cpu: "1"
             memory: 2880Mi
           requests:
-            cpu: "0.5"
+            cpu: "1"
             memory: 2880Mi
         securityContext:
           runAsNonRoot: true
@@ -1175,13 +1189,20 @@ spec:
       annotations:
         kots.io/app-slug: harness-ng
         kots.io/placeholder: "true"
-        license-features-hash: abc43bfad2c3c7274b66e21b998f581bf20ac8979a3705db18b8afec24d5f109
+        license-features-hash: 2b13e7fd2f0cb1370280febc2447dee41f1c78d6fcadb49e595fed0b22ac1f94
       labels:
         app: ci-manager
         kots.io/app-slug: harness-ng
         kots.io/backup: velero
         kots.io/placeholder: "true"
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app: ci-manager
+            topologyKey: kubernetes.io/hostname
       containers:
       - envFrom:
         - configMapRef:
@@ -1216,11 +1237,11 @@ spec:
           timeoutSeconds: 5
         resources:
           limits:
-            cpu: "0.5"
-            memory: 1400Mi
+            cpu: "1"
+            memory: 3072Mi
           requests:
-            cpu: "0.5"
-            memory: 1400Mi
+            cpu: "1"
+            memory: 3072Mi
         securityContext:
           runAsNonRoot: true
           runAsUser: 65534
@@ -1256,13 +1277,20 @@ spec:
       annotations:
         kots.io/app-slug: harness-ng
         kots.io/placeholder: "true"
-        license-features-hash: abc43bfad2c3c7274b66e21b998f581bf20ac8979a3705db18b8afec24d5f109
+        license-features-hash: 2b13e7fd2f0cb1370280febc2447dee41f1c78d6fcadb49e595fed0b22ac1f94
       labels:
         app: cv-nextgen
         kots.io/app-slug: harness-ng
         kots.io/backup: velero
         kots.io/placeholder: "true"
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app: cv-nextgen
+            topologyKey: kubernetes.io/hostname
       containers:
       - envFrom:
         - configMapRef:
@@ -1294,11 +1322,11 @@ spec:
           periodSeconds: 5
         resources:
           limits:
-            cpu: "0.5"
-            memory: 1400Mi
+            cpu: "1"
+            memory: 3000Mi
           requests:
-            cpu: "0.5"
-            memory: 1400Mi
+            cpu: "1"
+            memory: 3000Mi
         securityContext:
           runAsNonRoot: true
           runAsUser: 65534
@@ -1339,6 +1367,13 @@ spec:
         kots.io/backup: velero
         kots.io/placeholder: "true"
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app: le-nextgen
+            topologyKey: kubernetes.io/hostname
       containers:
       - envFrom:
         - configMapRef:
@@ -1354,11 +1389,11 @@ spec:
           protocol: TCP
         resources:
           limits:
-            cpu: "0.5"
-            memory: 512Mi
+            cpu: "4"
+            memory: 6132Mi
           requests:
-            cpu: "0.5"
-            memory: 512Mi
+            cpu: "4"
+            memory: 6132Mi
         securityContext:
           runAsNonRoot: true
       imagePullSecrets:
@@ -1399,6 +1434,13 @@ spec:
         kots.io/backup: velero
         kots.io/placeholder: "true"
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app: log-service
+            topologyKey: kubernetes.io/hostname
       containers:
       - envFrom:
         - configMapRef:
@@ -1426,11 +1468,11 @@ spec:
           periodSeconds: 10
         resources:
           limits:
-            cpu: "0.5"
-            memory: 1400Mi
+            cpu: "1"
+            memory: 3072Mi
           requests:
-            cpu: "0.5"
-            memory: 1400Mi
+            cpu: "1"
+            memory: 3072Mi
         securityContext:
           runAsNonRoot: true
           runAsUser: 65534
@@ -1560,13 +1602,20 @@ spec:
       annotations:
         kots.io/app-slug: harness-ng
         kots.io/placeholder: "true"
-        license-features-hash: abc43bfad2c3c7274b66e21b998f581bf20ac8979a3705db18b8afec24d5f109
+        license-features-hash: 2b13e7fd2f0cb1370280febc2447dee41f1c78d6fcadb49e595fed0b22ac1f94
       labels:
         app: next-gen-ui
         kots.io/app-slug: harness-ng
         kots.io/backup: velero
         kots.io/placeholder: "true"
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app: next-gen-ui
+            topologyKey: kubernetes.io/hostname
       containers:
       - envFrom:
         - configMapRef:
@@ -1593,11 +1642,11 @@ spec:
           periodSeconds: 10
         resources:
           limits:
-            cpu: "0.2"
-            memory: 200Mi
+            cpu: "0.5"
+            memory: 512Mi
           requests:
-            cpu: "0.2"
-            memory: 200Mi
+            cpu: "0.5"
+            memory: 512Mi
         securityContext:
           runAsNonRoot: true
           runAsUser: 101
@@ -1632,13 +1681,20 @@ spec:
       annotations:
         kots.io/app-slug: harness-ng
         kots.io/placeholder: "true"
-        license-features-hash: abc43bfad2c3c7274b66e21b998f581bf20ac8979a3705db18b8afec24d5f109
+        license-features-hash: 2b13e7fd2f0cb1370280febc2447dee41f1c78d6fcadb49e595fed0b22ac1f94
       labels:
         app: ng-manager
         kots.io/app-slug: harness-ng
         kots.io/backup: velero
         kots.io/placeholder: "true"
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app: ng-manager
+            topologyKey: kubernetes.io/hostname
       containers:
       - envFrom:
         - configMapRef:
@@ -1676,10 +1732,10 @@ spec:
           timeoutSeconds: 10
         resources:
           limits:
-            cpu: "0.5"
+            cpu: "2"
             memory: 6144Mi
           requests:
-            cpu: "0.5"
+            cpu: "2"
             memory: 6144Mi
         securityContext:
           runAsNonRoot: true
@@ -1715,13 +1771,20 @@ spec:
       annotations:
         kots.io/app-slug: harness-ng
         kots.io/placeholder: "true"
-        license-features-hash: abc43bfad2c3c7274b66e21b998f581bf20ac8979a3705db18b8afec24d5f109
+        license-features-hash: 2b13e7fd2f0cb1370280febc2447dee41f1c78d6fcadb49e595fed0b22ac1f94
       labels:
         app: pipeline-service
         kots.io/app-slug: harness-ng
         kots.io/backup: velero
         kots.io/placeholder: "true"
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app: pipeline-service
+            topologyKey: kubernetes.io/hostname
       containers:
       - envFrom:
         - configMapRef:
@@ -1759,11 +1822,11 @@ spec:
           timeoutSeconds: 5
         resources:
           limits:
-            cpu: "0.5"
-            memory: 1400Mi
+            cpu: "1"
+            memory: 6144Mi
           requests:
-            cpu: "0.5"
-            memory: 1400Mi
+            cpu: "1"
+            memory: 6144Mi
         securityContext:
           runAsNonRoot: true
           runAsUser: 65534
@@ -1804,6 +1867,13 @@ spec:
         kots.io/backup: velero
         kots.io/placeholder: "true"
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app: platform-service
+            topologyKey: kubernetes.io/hostname
       containers:
       - envFrom:
         - configMapRef:
@@ -1835,11 +1905,11 @@ spec:
           timeoutSeconds: 10
         resources:
           limits:
-            cpu: "0.5"
-            memory: 512Mi
+            cpu: "1"
+            memory: 3072Mi
           requests:
-            cpu: "0.5"
-            memory: 512Mi
+            cpu: "1"
+            memory: 3072Mi
         securityContext:
           runAsNonRoot: true
           runAsUser: 65534
@@ -1872,13 +1942,20 @@ spec:
       annotations:
         kots.io/app-slug: harness-ng
         kots.io/placeholder: "true"
-        license-features-hash: abc43bfad2c3c7274b66e21b998f581bf20ac8979a3705db18b8afec24d5f109
+        license-features-hash: 2b13e7fd2f0cb1370280febc2447dee41f1c78d6fcadb49e595fed0b22ac1f94
       labels:
         app: scm
         kots.io/app-slug: harness-ng
         kots.io/backup: velero
         kots.io/placeholder: "true"
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app: scm
+            topologyKey: kubernetes.io/hostname
       containers:
       - image: harness/ci-scm-signed:release-45
         imagePullPolicy: IfNotPresent
@@ -1945,6 +2022,13 @@ spec:
         kots.io/backup: velero
         kots.io/placeholder: "true"
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app: template-service
+            topologyKey: kubernetes.io/hostname
       containers:
       - envFrom:
         - configMapRef:
@@ -1983,10 +2067,10 @@ spec:
         resources:
           limits:
             cpu: "0.5"
-            memory: 750Mi
+            memory: 1400Mi
           requests:
             cpu: "0.5"
-            memory: 750Mi
+            memory: 1400Mi
         securityContext:
           runAsNonRoot: true
           runAsUser: 65534
@@ -2029,6 +2113,13 @@ spec:
         kots.io/backup: velero
         kots.io/placeholder: "true"
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app: ti-service
+            topologyKey: kubernetes.io/hostname
       containers:
       - envFrom:
         - secretRef:
@@ -2056,11 +2147,11 @@ spec:
           periodSeconds: 10
         resources:
           limits:
-            cpu: "0.5"
-            memory: 1400Mi
+            cpu: "1"
+            memory: 3072Mi
           requests:
-            cpu: "0.5"
-            memory: 1400Mi
+            cpu: "1"
+            memory: 3072Mi
         securityContext:
           runAsNonRoot: true
           runAsUser: 65534
@@ -2400,5 +2491,5 @@ spec:
   - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
+      storage: 200Gi
   storageClassName: standard
