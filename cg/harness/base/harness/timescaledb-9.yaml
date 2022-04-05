@@ -1,0 +1,27 @@
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: timescaledb-single-chart-replica
+  labels:
+    app: timescaledb-single-chart
+    chart: timescaledb-single-0.5.5
+    release: timescaledb-single-chart
+    heritage: Tiller
+    cluster-name: timescaledb-single-chart
+    role: replica
+    kots.io/placeholder: 'true'
+    
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "4000"   
+spec:
+  selector:
+    app: timescaledb-single-chart
+    cluster-name: timescaledb-single-chart
+    role: replica
+  type: ClusterIP
+  ports:
+  - name: postgresql
+    # This always defaults to 5432, even if `!replicaLoadBalancer.enabled`.
+    port: 5432
+    protocol: TCP

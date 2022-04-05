@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ng-auth-ui
+data:
+  DEPLOYMENT_TYPE: ON_PREM
+  API_URL: /gateway

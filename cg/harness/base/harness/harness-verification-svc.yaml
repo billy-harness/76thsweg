@@ -1,0 +1,19 @@
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: verification-svc
+  annotations:
+    kubernetes.io/ingress.class: 'harness'
+    kots.io/placeholder: 'true'
+    
+spec:
+  rules:
+    - http:
+        paths:
+          - backend:
+              serviceName: verification-svc
+              servicePort: 7070
+            path: /verification
+#              
+

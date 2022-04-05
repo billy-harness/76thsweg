@@ -1,0 +1,71 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ng-auth-ui
+  annotations:
+    kots.io/placeholder: 'true'
+    
+  labels:
+    app: ng-auth-ui
+    kots.io/placeholder: 'true'
+    
+spec:
+  selector:
+    matchLabels:
+      app: ng-auth-ui
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        kots.io/placeholder: 'true'
+         
+        license-features-hash: 'e0b1248bac7a0553702e9d25196df25a9f4e3cd7343bac84f243edcedeb2e46a'
+      labels:
+        app: ng-auth-ui
+        kots.io/placeholder: 'true'
+         
+    spec:
+#        
+      serviceAccountName: harness-default
+      containers:
+      - name: ng-auth-ui
+        image: harness/ng-auth-ui-signed:0.33.2
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 101
+          runAsNonRoot: true
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: ng-auth-ui-port
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: ng-auth-ui-port
+          initialDelaySeconds: 90
+          periodSeconds: 20
+          failureThreshold: 2
+        ports:
+        - name: ng-auth-ui-port
+          containerPort: 8080
+          protocol: "TCP"
+        envFrom:
+        - configMapRef:
+            name: ng-auth-ui
+        resources:
+          limits:
+            cpu: '0.2'
+            memory: '200Mi'
+          requests:
+            cpu: '0.2'
+            memory: '200Mi'

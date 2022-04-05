@@ -1,0 +1,144 @@
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-sentinel-harness-server
+  labels:
+    redis-sentinel-harness: replica
+    app: redis-sentinel
+    kots.io/placeholder: 'true'
+    
+  annotations:  
+    kots.io/placeholder: 'true'
+           
+spec:
+  selector:
+    matchLabels:
+      release: redis-ha
+      app: redis-sentinel
+  serviceName: redis-sentinel-harness
+  replicas: 3
+  podManagementPolicy: OrderedReady
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        kots.io/placeholder: 'true'
+         
+        checksum/init-config: 0fb17318c62ec6e7f89897284e4d3edf7b1a0fc156692f8b15db8fd976df2e48
+      labels:
+        release: redis-ha
+        app: redis-sentinel
+        redis-sentinel-harness: replica
+        kots.io/placeholder: 'true'
+         
+    spec:
+      affinity:
+        podAntiAffinity:
+#                 
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app:  redis-sentinel
+                    release: redis-ha
+                    redis-sentinel-harness: replica
+                topologyKey: failure-domain.beta.kubernetes.io/zone              
+      securityContext:
+        fsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+      serviceAccountName: harness-default
+      initContainers:
+      - name: config-init
+        image: harness/redis:6.2.5-alpine
+        imagePullPolicy: IfNotPresent
+        resources:
+          {}        
+        command:
+        - sh
+        args:
+        - /readonly-config/init.sh
+        env:
+        - name: SENTINEL_ID_0
+          value: ed89975e57ea5a6848fe664901b11b5e6b22b537
+
+        - name: SENTINEL_ID_1
+          value: 4abd57ef009b0a1595767af80ef815e3438ae7e9
+
+        - name: SENTINEL_ID_2
+          value: e21a3c2cf7abdfc6e8d921901addb1bf86fe32a0
+
+        volumeMounts:
+        - name: config
+          mountPath: /readonly-config
+          readOnly: true
+        - name: data
+          mountPath: /data
+      containers:
+      - name: redis
+        image: harness/redis:6.2.5-alpine
+        imagePullPolicy: IfNotPresent
+        command:
+        - redis-server
+        args:
+        - /data/conf/redis.conf
+        env:
+        livenessProbe:
+          tcpSocket:
+            port: 6379
+          initialDelaySeconds: 15
+        resources:
+          limits:
+            cpu: '0.1'
+            memory: '200Mi'
+          requests:
+            cpu: '0.1'
+            memory: '200Mi'  
+        ports:
+        - name: redis
+          containerPort: 6379
+        volumeMounts:
+        - mountPath: /data
+          name: data
+      - name: sentinel
+        image: harness/redis:6.2.5-alpine
+        imagePullPolicy: IfNotPresent
+        command:
+          - redis-sentinel
+        args:
+          - /data/conf/sentinel.conf
+        livenessProbe:
+          tcpSocket:
+            port: 26379
+          initialDelaySeconds: 15
+        resources:
+          limits:
+            cpu: 100m
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi 
+        ports:
+          - name: sentinel
+            containerPort: 26379
+        volumeMounts:
+        - mountPath: /data
+          name: data
+      volumes:
+      - name: config
+        configMap:
+          name: redis-sentinel-harness-configmap
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      annotations:
+    spec:
+      accessModes:
+        - "ReadWriteOnce"
+      resources:
+        requests:
+          storage: '2Gi'
+      storageClassName: 'standard'

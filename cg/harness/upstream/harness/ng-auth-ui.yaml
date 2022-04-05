@@ -1,0 +1,127 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ng-auth-ui
+data:
+  DEPLOYMENT_TYPE: ON_PREM
+  API_URL: /gateway
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ng-auth-ui
+  labels:
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "service_labels" | nindent 4 }} 
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: ng-auth-ui
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ng-auth-ui
+  annotations:
+    kubernetes.io/ingress.class: 'repl{{ ConfigOption "ingress_class_name" }}'
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "ingress_annotations" | nindent 4 }}
+spec:
+  rules:
+    - http:
+        paths:
+          - backend:
+              serviceName: ng-auth-ui
+              servicePort: 80
+            path: /auth(/|$)(.*)
+# repl{{ if ConfigOptionEquals "scheme" "https"}}
+      host: '{{repl ConfigOption "host_name" }}'
+  tls:
+    - hosts:
+      - '{{repl ConfigOption "host_name" }}'
+      secretName: harness-cert  
+# repl{{ end }}
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ng-auth-ui
+  annotations:
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "ng_auth_ui_deployment_annotations" | nindent 4 }}
+  labels:
+    app: ng-auth-ui
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "ng_auth_ui_labels" | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: ng-auth-ui
+  progressDeadlineSeconds: 600
+  replicas: repl{{ ConfigOption "ng_auth_ui_replica" }}
+  revisionHistoryLimit: 10
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "ng_auth_ui_podspec_annotations" | nindent 8 }} 
+        license-features-hash: '{{repl (sha256sum (print (LicenseFieldValue "license") (LicenseFieldValue "feature_flag") (ConfigOption "mode") (ConfigOption "loadbalancer_url") )) }}'
+      labels:
+        app: ng-auth-ui
+        kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "ng_auth_ui_labels" | nindent 8 }} 
+    spec:
+# repl{{ if ConfigOptionEquals "mode" "production_ha"}}      
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:	
+            - labelSelector:	
+                matchLabels:	
+                  app: ng-auth-ui
+              topologyKey: kubernetes.io/hostname
+# repl{{ end }}       
+      serviceAccountName: harness-default
+      containers:
+      - name: ng-auth-ui
+        image: harness/ng-auth-ui-signed:0.33.2
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 101
+          runAsNonRoot: true
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: ng-auth-ui-port
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: ng-auth-ui-port
+          initialDelaySeconds: 90
+          periodSeconds: 20
+          failureThreshold: 2
+        ports:
+        - name: ng-auth-ui-port
+          containerPort: 8080
+          protocol: "TCP"
+        envFrom:
+        - configMapRef:
+            name: ng-auth-ui
+        resources:
+          limits:
+            cpu: 'repl{{ ConfigOption "ng_auth_ui_cpu" }}'
+            memory: 'repl{{ ConfigOption "ng_auth_ui_memory" }}Mi'
+          requests:
+            cpu: 'repl{{ ConfigOption "ng_auth_ui_cpu" }}'
+            memory: 'repl{{ ConfigOption "ng_auth_ui_memory" }}Mi'

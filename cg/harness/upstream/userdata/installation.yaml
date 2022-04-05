@@ -1,0 +1,45 @@
+apiVersion: kots.io/v1beta1
+kind: Installation
+metadata:
+  creationTimestamp: null
+  name: harness
+spec:
+  channelID: 1aJQKdNBMGHhzKB2RwC4fYfScFI
+  channelName: Stable
+  knownImages:
+  - image: us.gcr.io/k8s-artifacts-prod/ingress-nginx/controller:v0.47.0
+  - image: harness/mongo:4.2.8
+  - image: harness/ng-auth-ui-signed:0.33.2
+  - image: harness/delegate-proxy-signed:74410
+  - image: busybox:1.33.1
+  - image: harness/ui-signed:73701
+    isPrivate: true
+  - image: harness/manager-signed:74410
+  - image: harness/mongodb-install:0.8
+  - image: harness/redis:6.2.5-alpine
+  - image: timescaledev/timescaledb-ha:pg11.11-ts2.1.0-p1
+  - image: harness/gateway-signed:100089
+  - image: harness/verification-service-signed:74410
+    isPrivate: true
+  - image: k8s.gcr.io/defaultbackend-amd64:1.5
+  - image: harness/learning-engine-onprem-signed:66100
+    isPrivate: true
+  releaseNotes: |2
+
+    This version is fixing an issue with saml/ldap login
+
+    https://docs.harness.io/article/0v512791gf-harness-on-prem-release-notes#minor_release_74410
+
+    Sign in Page gets a new look with this release.
+
+    New Component Harness Gateway is added to the cluster with this release.
+
+    SAML users please add /gateway in the redirect url.
+
+    /api changes to /gateway/api
+
+
+    Note: Supported Kots version - 1.64.0 Please upgrade kots
+  updateCursor: "91"
+  versionLabel: 1.0.74410
+status: {}

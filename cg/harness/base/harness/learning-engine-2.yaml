@@ -1,0 +1,8 @@
+
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: learning-engine
+stringData:
+  service_secret: 59MR5RlVARcdH7zb7pNx6GzqiglBmXR8

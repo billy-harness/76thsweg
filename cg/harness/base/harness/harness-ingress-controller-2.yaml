@@ -1,0 +1,11 @@
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: harness-ingress-controller-tcp-services
+data:
+  9879: 'harness/harness-manager:9879'
+# 
+  9000: 'harness/log-service-minio:9000'
+  7909: 'harness/gitops-service:7909'
+#     

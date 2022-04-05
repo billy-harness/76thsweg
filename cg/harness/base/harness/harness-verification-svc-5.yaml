@@ -1,0 +1,107 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: verification-svc
+    kots.io/placeholder: 'true'
+    
+  annotations:  
+    kots.io/placeholder: 'true'
+        
+  name: verification-svc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: verification-svc
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: verification-svc
+        kots.io/placeholder: 'true'
+         
+      annotations:
+        kots.io/placeholder: 'true'
+         
+        license-features-hash: 'e0b1248bac7a0553702e9d25196df25a9f4e3cd7343bac84f243edcedeb2e46a'      
+    spec:
+#                  
+      serviceAccountName: harness-default
+      initContainers:
+        - name: check-for-mongo
+          image: harness/mongo:4.2.8
+          command: 
+            - "sh"
+          args:
+            - "-c"
+            - |
+              if [ -s /mongo/ca.pem ]; then 
+                ssl_args="--tls --tlsCAFile /mongo/ca.pem --tlsCertificateKeyFile /mongo/client.pem"; 
+              fi
+              until mongo "$(cat /config/MONGO_URI)" $ssl_args --eval "db.adminCommand('ping')"; do echo waiting for mongodb; sleep 2; done
+          volumeMounts:
+            - name: verification-svc
+              mountPath: /config
+#                 
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+      containers:
+        - envFrom:
+            - configMapRef:
+                name: verification-svc
+            - secretRef:
+                name: verification-svc
+          image: harness/verification-service-signed:74410
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: true
+          livenessProbe:
+            failureThreshold: 2
+            httpGet:
+              path: /verification/health
+              port: verification
+              scheme: HTTP
+            initialDelaySeconds: 300
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: verification
+          ports:
+            - containerPort: 7070
+              name: verification
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /verification/health
+              port: verification
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 1
+#              
+          resources:
+            limits:
+              cpu: '0.5'
+              memory: '1400Mi'
+            requests:
+              cpu: '0.5'
+              memory: '1400Mi'
+      restartPolicy: Always
+      volumes:
+        - name: verification-svc
+          secret:
+            secretName: verification-svc
+            items:
+              - key: MONGO_URI
+                path: MONGO_URI
+#                   
+
+---

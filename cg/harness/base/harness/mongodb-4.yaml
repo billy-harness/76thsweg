@@ -1,0 +1,11 @@
+
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    app: mongodb-replicaset
+  name: mongodb-replicaset-chart-admin
+type: Opaque
+data:
+  user: YWRtaW4=
+  password: Q0E4Rk15d3BiTQ==

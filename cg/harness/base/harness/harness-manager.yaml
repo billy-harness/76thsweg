@@ -1,0 +1,24 @@
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    hazelcast-cluster: harness-manager
+    kots.io/placeholder: 'true'
+     
+  name: harness-manager
+  
+spec:
+  ports:
+    - name: http-manager
+      port: 9090
+      protocol: TCP
+      targetPort: 9090
+    - name: manager-grpc
+      port: 9879
+      protocol: TCP
+      targetPort: 9879  
+  selector:
+    app: harness-manager
+  sessionAffinity: None
+  type: ClusterIP

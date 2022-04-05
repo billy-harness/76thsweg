@@ -1,0 +1,21 @@
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: manager-grpc
+  annotations:
+    kubernetes.io/ingress.class: 'harness'
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+spec:
+  rules:
+  - host: 'manager-grpc-35.202.24.14'
+    http:
+     paths:
+     - backend:
+          serviceName: harness-manager
+          servicePort: manager-grpc
+       path: /
+  tls:
+  - hosts:
+    - 'manager-grpc-35.202.24.14'
+    secretName: 'harness-cert'

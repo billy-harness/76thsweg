@@ -1,0 +1,117 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: harness-manager
+  labels:
+    kots.io/placeholder: 'true'
+    
+  annotations:  
+    kots.io/placeholder: 'true'
+    
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: harness-manager
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: harness-manager
+        kots.io/placeholder: 'true'
+         
+      annotations:
+        kots.io/placeholder: 'true'
+        
+        license-features-hash: 'e0b1248bac7a0553702e9d25196df25a9f4e3cd7343bac84f243edcedeb2e46a'
+    spec:
+#               
+      serviceAccountName: harness-default
+      initContainers:
+        - name: check-for-mongo
+          image: harness/mongo:4.2.8
+          command: 
+            - "sh"
+          args:
+            - "-c"
+            - |
+              if [ -s /mongo/ca.pem ]; then 
+                ssl_args="--tls --tlsCAFile /mongo/ca.pem --tlsCertificateKeyFile /mongo/client.pem"; 
+              fi
+              until mongo "$(cat /config/MONGO_URI)" $ssl_args --eval "db.adminCommand('ping')"; do echo waiting for mongodb; sleep 2; done
+          volumeMounts:
+            - name: harness-manager-config
+              mountPath: /config
+#                
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+        - name: check-for-timescaledb
+          image: timescaledev/timescaledb-ha:pg11.11-ts2.1.0-p1
+          command: ['sh', '-c', "until pg_isready -h timescaledb-single-chart; do echo waiting for timescaledb; sleep 2; done"]
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+      containers:
+        - envFrom:
+            - configMapRef:
+                name: harness-manager-config
+            - secretRef:
+                name: harness-manager-config
+          image: harness/manager-signed:74410
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 65534
+            runAsNonRoot: true
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - touch
+                  - shutdown
+          livenessProbe:
+            failureThreshold: 20
+            initialDelaySeconds: 180
+            httpGet:
+              path: /api/version
+              port: 9090
+              scheme: HTTP
+            periodSeconds: 20
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: manager
+          ports:
+            - containerPort: 9879
+              protocol: TCP       
+          readinessProbe:
+            failureThreshold: 6
+            httpGet:
+              path: /api/health
+              port: 9090
+              scheme: HTTP
+            initialDelaySeconds: 90
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 1
+#             
+          resources:
+            limits:
+              cpu: '0.5'
+              memory: '3000Mi'
+            requests:
+              cpu: '0.5'
+              memory: '3000Mi'
+      volumes:
+        - name: harness-manager-config
+          secret:
+            secretName: harness-manager-config
+            items:
+              - key: MONGO_URI
+                path: MONGO_URI
+#                   

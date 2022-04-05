@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: timescaledb-init
+data:
+  on_start: |
+    #!/bin/bash
+
+    # This script should only run on the master instance, Patroni
+    # passes on the role in the second parameter
+    echo "Running timescaledb-init"
+    [ "$2" != "master" ] && exit 0
+
+    echo "SELECT 'CREATE DATABASE harness' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'harness')\gexec" | psql
+
+    echo "SELECT 'CREATE DATABASE harnessti' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'harnessti')\gexec" | psql

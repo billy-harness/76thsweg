@@ -1,0 +1,196 @@
+apiVersion: kots.io/v1beta1
+kind: ConfigValues
+metadata:
+  creationTimestamp: null
+  name: harness
+spec:
+  values:
+    additional_cpu:
+      default: "4"
+    additional_memory:
+      default: "8192"
+    additional_storage:
+      default: "20"
+    advanced_configuration:
+      default: "0"
+    app_log_level:
+      default: INFO
+    ca_pem: {}
+    client_pem: {}
+    default_backend_config: {}
+    default_backend_deployment_annotations: {}
+    default_backend_labels: {}
+    default_backend_podspec_annotations: {}
+    external_graphql_rate_limit:
+      default: "500"
+    gateway_config: {}
+    gateway_cpu:
+      default: "0.2"
+    gateway_deployment_annotations: {}
+    gateway_memory:
+      default: "1024"
+    gateway_pod_memory:
+      default: "1300"
+    gateway_podspec_annotations: {}
+    gateway_replica:
+      default: "1"
+    gitops_grpc_nodeport:
+      default: "32511"
+    grpc_authority:
+      default: default-authority.harness.io
+    grpc_cert:
+      default: harness-cert
+    grpc_nodeport:
+      default: "32510"
+    grpc_target:
+      default: 35.202.24.14:9879
+    host_name:
+      value: 35.202.24.14
+    https_nodeport:
+      default: "32505"
+    ingress_annotations: {}
+    ingress_class_name:
+      default: harness
+    ingress_config: {}
+    ingress_controller_config: {}
+    ingress_controller_cpu:
+      default: "0.2"
+    ingress_controller_deployment_annotations: {}
+    ingress_controller_labels: {}
+    ingress_controller_memory:
+      default: "200"
+    ingress_controller_podspec_annotations: {}
+    ingress_controller_replica:
+      default: "1"
+    ingress_controller_service_annotations: {}
+    ingress_service_type:
+      default: ingress_service_type_nodeport
+      value: ingress_service_type_loadbalancer
+    ingress_traffic_policy:
+      default: Cluster
+    labels_config: {}
+    le_deployment_annotations: {}
+    le_labels: {}
+    le_podspec_annotations: {}
+    learning_config: {}
+    learning_cpu:
+      default: "0.5"
+    learning_memory:
+      default: "512"
+    learning_replica:
+      default: "1"
+    loadbalancer_ip:
+      default: 0.0.0.0
+      value: 35.202.24.14
+    loadbalancer_url:
+      value: http://35.202.24.14
+    manager_config: {}
+    manager_cpu:
+      default: "0.5"
+    manager_deployment_annotations: {}
+    manager_labels: {}
+    manager_memory:
+      default: "2048"
+    manager_pod_disruption_budget:
+      default: "0"
+    manager_pod_memory:
+      default: "3000"
+    manager_podspec_annotations: {}
+    manager_replica:
+      default: "1"
+    minio_nodeport:
+      default: "32507"
+    mode:
+      default: production_ha
+      value: demo
+    mongo_config: {}
+    mongo_cpu:
+      default: "0.5"
+    mongo_deployment_annotations: {}
+    mongo_labels: {}
+    mongo_memory:
+      default: "1024"
+    mongo_pem: {}
+    mongo_podspec_annotations: {}
+    mongo_replica:
+      default: "1"
+    mongo_ssl:
+      default: "false"
+    mongo_storage_capacity:
+      default: "10"
+    ng_auth_ui_config: {}
+    ng_auth_ui_cpu:
+      default: "0.2"
+    ng_auth_ui_deployment_annotations: {}
+    ng_auth_ui_labels: {}
+    ng_auth_ui_memory:
+      default: "200"
+    ng_auth_ui_podspec_annotations: {}
+    ng_auth_ui_replica:
+      default: "1"
+    ng_enabled:
+      default: "0"
+      value: "1"
+    nginx_ingress_controller:
+      default: "1"
+    nodeport:
+      default: "32500"
+    redis_config: {}
+    redis_deployment_annotations: {}
+    redis_labels: {}
+    redis_podspec_annotations: {}
+    redis_replica:
+      default: "3"
+    redis_server_cpu:
+      default: "0.1"
+    redis_server_memory:
+      default: "200"
+    redis_storage_capacity:
+      default: "2"
+    scheme:
+      default: https
+      value: http
+    service_labels: {}
+    storage_class:
+      value: standard
+    storage_deployment_annotations: {}
+    storage_labels: {}
+    storage_podspec_annotations: {}
+    storage_proxy_config: {}
+    timescale_cpu:
+      default: "0.3"
+    timescale_memory:
+      default: "512"
+    timescale_replica:
+      default: "1"
+    timescale_storage_capacity:
+      default: "10"
+    tsdb_config: {}
+    tsdb_deployment_annotations: {}
+    tsdb_labels: {}
+    tsdb_podspec_annotations: {}
+    ui_config: {}
+    ui_cpu:
+      default: "0.2"
+    ui_deployment_annotations: {}
+    ui_labels: {}
+    ui_memory:
+      default: "200"
+    ui_podspec_annotations: {}
+    ui_replica:
+      default: "1"
+    verification_config: {}
+    verification_cpu:
+      default: "0.5"
+    verification_deployment_annotations: {}
+    verification_labels: {}
+    verification_memory:
+      default: "1024"
+    verification_pod_memory:
+      default: "1400"
+    verification_podspec_annotations: {}
+    verification_replica:
+      default: "1"
+    wired_tiger_cache_size:
+      default: "0.2"
+status: {}

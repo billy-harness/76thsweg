@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: delegate-proxy
+  labels:
+    kots.io/placeholder: 'true'
+    
+  annotations:  
+    kots.io/placeholder: 'true'
+           
+spec:
+  selector:
+    matchLabels:
+      app: delegate-proxy
+  template:
+    metadata:
+      labels:
+        app: delegate-proxy
+        kots.io/placeholder: 'true'
+        
+      annotations:  
+        kots.io/placeholder: 'true'
+             
+    spec:
+      serviceAccountName: harness-default
+      securityContext:
+        runAsUser: 101
+      containers:
+        - image: harness/delegate-proxy-signed:74410
+          imagePullPolicy: IfNotPresent
+          name: delegate-proxy
+          resources:
+            limits:
+              cpu: 200m
+              memory: 100Mi
+            requests:
+              cpu: 200m
+              memory: 100Mi
+          volumeMounts:
+            - mountPath: /etc/nginx/conf.d
+              name: harness-nginx-conf
+      volumes:
+        - name: harness-nginx-conf
+          configMap:
+            name: delegate-proxy
+            items:
+              - key: proxy.conf
+                path: proxy.conf

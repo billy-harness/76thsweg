@@ -1,0 +1,8 @@
+apiVersion: v1
+data:
+  API_URL: 'http://35.202.24.14/gateway'
+  HARNESS_ENABLE_DRIFT_PLACEHOLDER: "false"
+  HARNESS_ENABLE_NG_AUTH_UI_PLACEHOLDER: "true"
+kind: ConfigMap
+metadata:
+  name: ui

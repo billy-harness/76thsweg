@@ -1,0 +1,57 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: learning-engine
+    kots.io/placeholder: 'true'
+    
+  annotations:  
+    kots.io/placeholder: 'true'
+           
+  name: learning-engine
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: learning-engine
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: learning-engine
+        kots.io/placeholder: 'true'
+        
+      annotations:  
+        kots.io/placeholder: 'true'
+                   
+    spec:
+#                 
+      containers:
+        - envFrom:
+            - configMapRef:
+                name: learning-engine
+            - secretRef:
+                name: learning-engine
+          image: harness/learning-engine-onprem-signed:66100
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: true
+          name: learning-engine
+          ports:
+            - containerPort: 8108
+              name: learning
+              protocol: TCP
+          resources:
+            limits:
+              cpu: '0.5'
+              memory: '512Mi'
+            requests:
+              cpu: '0.5'
+              memory: '512Mi'
+      serviceAccountName: harness-default
+---

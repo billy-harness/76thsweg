@@ -1,0 +1,9 @@
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: learning-engine
+data:
+  https_port: "10800"
+  learning_env: on_prem
+  server_url: http://verification-svc:7070

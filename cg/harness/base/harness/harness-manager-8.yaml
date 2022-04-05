@@ -1,0 +1,13 @@
+
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: harness-manager-config
+stringData:
+  LICENSE_INFO: 'su3x47cXBqhiaIqaFkPa7o7nMD4tgWGJlwn9EovOHi0xJjasm5SyQCsmYR10pgSsbFLW1jOSsg1ZY/kI5d886w=='
+  MONGO_URI: 'mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc.cluster.local/harness?authSource=admin' 
+  TIMESCALEDB_URI: 'jdbc:postgresql://timescaledb-single-chart.harness:5432/harness'
+  TIMESCALEDB_PASSWORD: kXsMSRiREYXiMciUwMdj
+  TIMESCALEDB_USERNAME: postgres
+  VERIFICATION_SERVICE_SECRET: 59MR5RlVARcdH7zb7pNx6GzqiglBmXR8

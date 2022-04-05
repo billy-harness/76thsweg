@@ -1,0 +1,25 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+bases:
+- ../../base
+commonAnnotations:
+  kots.io/app-slug: harness
+images:
+- name: docker.io/harness/verification-service-signed
+  newName: proxy.replicated.com/proxy/harness/harness/verification-service-signed
+- name: harness/verification-service-signed
+  newName: proxy.replicated.com/proxy/harness/harness/verification-service-signed
+- name: docker.io/harness/learning-engine-onprem-signed
+  newName: proxy.replicated.com/proxy/harness/harness/learning-engine-onprem-signed
+- name: harness/learning-engine-onprem-signed
+  newName: proxy.replicated.com/proxy/harness/harness/learning-engine-onprem-signed
+- name: docker.io/harness/ui-signed
+  newName: proxy.replicated.com/proxy/harness/harness/ui-signed
+- name: harness/ui-signed
+  newName: proxy.replicated.com/proxy/harness/harness/ui-signed
+kind: Kustomization
+patchesStrategicMerge:
+- pullsecrets.yaml
+resources:
+- secret.yaml
+transformers:
+- backup-label-transformer.yaml

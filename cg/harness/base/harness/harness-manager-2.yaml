@@ -1,0 +1,22 @@
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: harness-manager
+  annotations:
+    kubernetes.io/ingress.class: 'harness'
+    kots.io/placeholder: 'true'
+    
+spec:
+  rules:
+    - http:
+        paths:
+          - backend:
+              serviceName: harness-manager
+              servicePort: 9090
+            path: /api
+          - backend:
+              serviceName: harness-manager
+              servicePort: 9090
+            path: /stream
+#                

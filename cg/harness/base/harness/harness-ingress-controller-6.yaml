@@ -1,0 +1,103 @@
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: harness-ingress-controller
+  annotations:
+    "kots.io/exclude": 'false'
+    kots.io/placeholder: 'true'
+    
+  labels:
+    kots.io/placeholder: 'true'
+        
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: harness-ingress-controller
+  progressDeadlineSeconds: 300
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: "harness-ingress-controller"
+        kots.io/placeholder: 'true'
+        
+      annotations:  
+        kots.io/placeholder: 'true'
+         
+    spec:
+#              
+      serviceAccountName: harness-serviceaccount
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        runAsUser: 101
+      containers:
+      - image: us.gcr.io/k8s-artifacts-prod/ingress-nginx/controller:v0.47.0
+        name: nginx-ingress-controller
+        imagePullPolicy: IfNotPresent
+        envFrom:
+        - configMapRef:
+            name: harness-ingress-controller
+        resources:
+          limits:
+            cpu: '0.2'
+            memory: '200Mi'
+          requests:
+            cpu: '0.2'
+            memory: '200Mi'
+        ports:
+          - name: http
+            containerPort: 8080
+            protocol: TCP
+          - name: https
+            containerPort: 8443
+            protocol: TCP
+#             
+          - name: minio
+            containerPort: 9000
+            protocol: TCP   
+          - name: gitops-grpc
+            containerPort: 7909
+            protocol: TCP 
+#   
+          - name: grpc
+            containerPort: 9879
+            protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 10254
+            scheme: HTTP
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+        securityContext:
+          allowPrivilegeEscalation: false
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        args:
+        - /nginx-ingress-controller
+        - --ingress-class=harness
+        - --default-backend-service=$(POD_NAMESPACE)/default-backend
+        - --election-id=ingress-controller-leader
+        - --watch-namespace=$(POD_NAMESPACE)
+        - --update-status=true
+        - --configmap=$(POD_NAMESPACE)/harness-ingress-controller
+        - --http-port=8080
+        - --https-port=8443
+        - --tcp-services-configmap=$(POD_NAMESPACE)/harness-ingress-controller-tcp-services
+        - --default-ssl-certificate=$(POD_NAMESPACE)/harness-cert
+        - --publish-service=$(POD_NAMESPACE)/harness-ingress-controller

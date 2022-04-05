@@ -1,0 +1,195 @@
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: verification-svc
+  annotations:
+    kubernetes.io/ingress.class: 'repl{{ ConfigOption "ingress_class_name" }}'
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "ingress_annotations" | nindent 4 }}
+spec:
+  rules:
+    - http:
+        paths:
+          - backend:
+              serviceName: verification-svc
+              servicePort: 7070
+            path: /verification
+# repl{{ if ConfigOptionEquals "scheme" "https"}}
+      host: '{{repl ConfigOption "host_name" }}'
+  tls:
+    - hosts:
+      - '{{repl ConfigOption "host_name" }}'
+      secretName: harness-cert  
+# repl{{ end }}             
+
+
+---
+apiVersion: v1
+metadata:
+  name: verification-svc
+data:
+  DEPLOY_MODE: KUBERNETES_ONPREM
+  LOGGING_LEVEL: 'repl{{ ConfigOption "app_log_level" }}'
+  MANAGER_URL: http://harness-manager:9090/api/
+  MEMORY: 'repl{{ ConfigOption "verification_memory" }}'
+  VERIFICATION_PORT: "7070"
+  VERSION: 1.0.72506
+# repl{{ if ConfigOptionEquals "mongo_ssl" "true"}}
+  MONGO_SSL_CONFIG: "true"
+  MONGO_SSL_CA_TRUST_STORE_PATH: /opt/harness/keystore.jks
+  MONGO_SSL_CA_TRUST_STORE_PASSWORD: password 
+ # repl{{ end }}   
+kind: ConfigMap
+
+---
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: verification-svc
+stringData:
+  VERIFICATION_SERVICE_SECRET: 59MR5RlVARcdH7zb7pNx6GzqiglBmXR8
+  MONGO_URI: '{{repl if ConfigOptionEquals "mode" "production_ha"}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc.cluster.local,mongodb-replicaset-chart-1.mongodb-replicaset-chart.{{repl Namespace}}.svc.cluster.local,mongodb-replicaset-chart-2.mongodb-replicaset-chart.{{repl Namespace}}.svc.cluster.local:27017/harness?replicaSet=rs0&authSource=admin{{repl else}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc.cluster.local/harness?authSource=admin{{repl end}}'
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: verification-svc
+  labels:
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "service_labels" | nindent 4 }} 
+spec:
+  ports:
+    - name: verification
+      port: 7070
+      protocol: TCP
+      targetPort: 7070
+  selector:
+    app: verification-svc
+  sessionAffinity: None
+  type: ClusterIP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: verification-svc
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "verification_labels" | nindent 4 }}
+  annotations:  
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "verification_deployment_annotations" | nindent 4 }}    
+  name: verification-svc
+spec:
+  replicas: repl{{ ConfigOption "verification_replica" }}
+  selector:
+    matchLabels:
+      app: verification-svc
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: verification-svc
+        kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "verification_labels" | nindent 8 }} 
+      annotations:
+        kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "verification_podspec_annotations" | nindent 8 }} 
+        license-features-hash: '{{repl (sha256sum (print (LicenseFieldValue "license") (LicenseFieldValue "feature_flag") (ConfigOption "mode") (ConfigOption "loadbalancer_url") )) }}'      
+    spec:
+# repl{{ if ConfigOptionEquals "mode" "production_ha"}}      
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:	
+            - labelSelector:	
+                matchLabels:	
+                  app: verification-svc	
+              topologyKey: kubernetes.io/hostname
+# repl{{ end }}                 
+      serviceAccountName: harness-default
+      initContainers:
+        - name: check-for-mongo
+          image: harness/mongo:4.2.8
+          command: 
+            - "sh"
+          args:
+            - "-c"
+            - |
+              if [ -s /mongo/ca.pem ]; then 
+                ssl_args="--tls --tlsCAFile /mongo/ca.pem --tlsCertificateKeyFile /mongo/client.pem"; 
+              fi
+              until mongo "$(cat /config/MONGO_URI)" $ssl_args --eval "db.adminCommand('ping')"; do echo waiting for mongodb; sleep 2; done
+          volumeMounts:
+            - name: verification-svc
+              mountPath: /config
+# repl{{ if ConfigOptionEquals "mongo_ssl" "true"}}                
+            - name: mongo-ssl-certs
+              mountPath: /mongo
+# repl{{ end }}                
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+      containers:
+        - envFrom:
+            - configMapRef:
+                name: verification-svc
+            - secretRef:
+                name: verification-svc
+          image: harness/verification-service-signed:74410
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: true
+          livenessProbe:
+            failureThreshold: 2
+            httpGet:
+              path: /verification/health
+              port: verification
+              scheme: HTTP
+            initialDelaySeconds: 300
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: verification
+          ports:
+            - containerPort: 7070
+              name: verification
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /verification/health
+              port: verification
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 1
+# repl{{ if ConfigOptionEquals "mongo_ssl" "true"}}
+          volumeMounts:                
+            - name: mongo-ssl-certs
+              mountPath: /mongo
+# repl{{ end }}             
+          resources:
+            limits:
+              cpu: 'repl{{ ConfigOption "verification_cpu" }}'
+              memory: 'repl{{ ConfigOption "verification_pod_memory" }}Mi'
+            requests:
+              cpu: 'repl{{ ConfigOption "verification_cpu" }}'
+              memory: 'repl{{ ConfigOption "verification_pod_memory" }}Mi'
+      restartPolicy: Always
+      volumes:
+        - name: verification-svc
+          secret:
+            secretName: verification-svc
+            items:
+              - key: MONGO_URI
+                path: MONGO_URI
+# repl{{ if ConfigOptionEquals "mongo_ssl" "true"}}                
+        - name: mongo-ssl-certs
+          secret:
+            secretName: mongodb-replicaset-ssl-cert
+# repl{{ end }}                  
+
+---

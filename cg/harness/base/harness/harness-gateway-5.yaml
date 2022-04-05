@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: harness-gateway
+  labels:
+    app: harness-gateway
+    kots.io/placeholder: 'true'
+    
+  annotations:  
+    kots.io/placeholder: 'true'
+         
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: harness-gateway
+  template:
+    metadata:
+      labels:
+        app: harness-gateway
+        kots.io/placeholder: 'true'
+        
+      annotations:
+        kots.io/placeholder: 'true'
+                 
+    spec:
+# 
+      serviceAccountName: harness-default    
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: harness-gateway
+        image: harness/gateway-signed:100089
+        imagePullPolicy: Always
+        securityContext:
+          runAsUser: 65534
+          runAsNonRoot: true        
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: gateway-port
+          initialDelaySeconds: 120
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: gateway-port
+          initialDelaySeconds: 180
+          periodSeconds: 20
+          failureThreshold: 2
+        ports:
+        - name: gateway-port
+          containerPort: 8080
+          protocol: "TCP"
+        resources:
+          limits:
+            memory: '1300Mi'
+            cpu: '0.2'
+          requests:
+            memory: '1300Mi'
+            cpu: '0.2'
+        envFrom:
+        - configMapRef:
+            name: harness-gateway
+        - secretRef:
+            name: harness-gateway          

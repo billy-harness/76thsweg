@@ -1,0 +1,48 @@
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: harness-ingress-controller
+  annotations:
+    "kots.io/exclude": 'false'
+    kots.io/placeholder: 'true'
+    
+  labels:
+    kots.io/placeholder: 'true'
+       
+spec:
+  selector:
+    app: harness-ingress-controller 
+  type: 'LoadBalancer'
+# 
+  loadBalancerIP: '35.202.24.14'
+# 
+  externalTrafficPolicy: 'Cluster'
+  ports:
+  - name: http
+    nodePort: 32500
+    port: 80
+    protocol: TCP
+    targetPort: http
+  - name: https
+    nodePort: 32505
+    port: 443
+    protocol: TCP
+    targetPort: https
+# 
+  - name: minio
+    nodePort: 32507   
+    port: 9000
+    protocol: TCP
+    targetPort: 9000
+  - name: gitops-grpc
+    nodePort: 32511
+    port: 7909
+    protocol: TCP
+    targetPort: 7909
+#        
+  - name: grpc
+    nodePort: 32510
+    port: 9879
+    protocol: TCP
+    targetPort: 9879
