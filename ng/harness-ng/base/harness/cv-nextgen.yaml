@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cv-nextgen
+data:
+  DEPLOY_MODE: KUBERNETES_ONPREM
+
+  ENV: KUBERNETES_ONPREM
+
+  LOGGING_LEVEL: 'INFO'
+  MANAGER_URL: '35.202.24.14/api/'
+
+  NG_MANAGER_URL: '35.202.24.14/ng/api/'
+  MEMORY: '1024'
+  STACK_DRIVER_LOGGING_ENABLED: "false"
+  VERIFICATION_PORT: "6060"
+
+  VERIFICATION_SERVICE_SECRET: 59MR5RlVARcdH7zb7pNx6GzqiglBmXR8
+  NOTIFICATION_BASE_URL: '35.202.24.14/notifications/api/'
+  PORTAL_URL: '35.202.24.14/api/'
+  MANAGER_CLIENT_BASEURL: '35.202.24.14/'
+  EEVENTS_FRAMEWORK_REDIS_URL: 'redis://localhost:6379'
+  EVENTS_FRAMEWORK_USE_SENTINEL: "true"
+  EVENTS_FRAMEWORK_SENTINEL_MASTER_NAME: 'harness-redis'
+  EVENTS_FRAMEWORK_REDIS_SENTINELS: 'redis://redis-sentinel-harness-announce-0.harness:26379,redis://redis-sentinel-harness-announce-1.harness:26379,redis://redis-sentinel-harness-announce-2.harness:26379'
+  SHOULD_CONFIGURE_WITH_PMS: "true"
+  PMS_TARGET: pipeline-service:12011
+  PMS_AUTHORITY: default-authority.harness.io
+  GRPC_SERVER_PORT: "9979"
+  CACHE_CONFIG_REDIS_URL: 'redis://localhost:6379'
+  CACHE_BACKEND: "REDIS"
+  CACHE_CONFIG_REDIS_SENTINELS: 'redis://redis-sentinel-harness-announce-0.harness:26379,redis://redis-sentinel-harness-announce-1.harness:26379,redis://redis-sentinel-harness-announce-2.harness:26379'
+  CACHE_CONFIG_SENTINEL_MASTER_NAME: "harness-redis"
+  CACHE_CONFIG_USE_SENTINEL: "true"
+
+  MOCK_ACCESS_CONTROL_SERVICE: "false"
+  ACCESS_CONTROL_BASE_URL: '35.202.24.14/authz/api/'
+  ACCESS_CONTROL_ENABLED: "true"

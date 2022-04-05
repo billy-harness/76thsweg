@@ -1,0 +1,176 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: template-service
+data:
+  CACHE_BACKEND: "REDIS"
+  CACHE_CONFIG_REDIS_SENTINELS: 'redis://redis-sentinel-harness-announce-0.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-1.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-2.{{repl Namespace}}:26379'
+  CACHE_CONFIG_SENTINEL_MASTER_NAME: "harness-redis"
+  CACHE_CONFIG_USE_SENTINEL: "true"
+  DEPLOY_MODE: KUBERNETES_ONPREM
+  LOGGING_LEVEL: 'repl{{ ConfigOption "app_log_level" }}'
+  MEMORY: 'repl{{ ConfigOption "template_memory" }}m'
+  MANAGER_TARGET: harness-manager:9879
+  MANAGER_AUTHORITY: default-authority.harness.io
+  NG_MANAGER_GITSYNC_TARGET: ng-manager:13002
+  NG_MANAGER_GITSYNC_AUTHORITY: default-authority.harness.io
+  SCM_SERVICE_URI: "scm:8091"
+  EVENTS_FRAMEWORK_REDIS_URL: 'redis://localhost:6379'
+  EVENTS_FRAMEWORK_USE_SENTINEL: "true"
+  EVENTS_FRAMEWORK_SENTINEL_MASTER_NAME: 'harness-redis'
+  EVENTS_FRAMEWORK_REDIS_SENTINELS: 'redis://redis-sentinel-harness-announce-0.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-1.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-2.{{repl Namespace}}:26379'
+  NG_MANAGER_BASE_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/ng/api/'
+  ENABLE_AUTH: "true"
+  ENABLE_GIT_SYNC: "true"
+  ENABLE_AUDIT: "true"
+  ACCESS_CONTROL_ENABLED: "true"
+  ENFORCEMENT_CHECK_ENABLED: "false"
+  ACCESS_CONTROL_BASE_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/authz/api/'
+  AUDIT_SERVICE_BASE_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/audit/api/'
+  PMS_GRPC_TARGET:  pipeline-service:12011
+  PMS_GRPC_AUTHORITY:  default-authority.harness.io
+---
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: template-service
+stringData:
+  MONGO_URI: '{{repl if ConfigOptionEquals "mode" "production_ha"}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.{{repl Namespace}}.svc:27017/template-harness?replicaSet=rs0&authSource=admin{{repl else}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc/template-harness?authSource=admin{{repl end}}'
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: template-service
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    kubernetes.io/ingress.class: 'repl{{ ConfigOption "ingress_class_name" }}'
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "ingress_annotations" | nindent 4 }}
+spec:
+  rules:
+    - http:
+        paths:
+          - backend:
+              serviceName: template-service
+              servicePort: 15001
+            path: /template(/|$)(.*)
+# repl{{ if ConfigOptionEquals "scheme" "https"}}
+      host: '{{repl ConfigOption "host_name" }}'
+  tls:
+    - hosts:
+        - '{{repl ConfigOption "host_name" }}'
+      secretName: harness-cert
+# repl{{ end }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: template-service
+  labels:
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "labels" | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: template-grpc
+      port: 15011
+      protocol: TCP
+      targetPort: 15011
+    - name: template-http
+      port: 15001
+      protocol: TCP
+      targetPort: 15001
+    - name: gitsync-grpc
+      port: 16002
+      protocol: TCP
+      targetPort: 16002
+  selector:
+    app: template-service
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: template-service
+  labels:
+    app: template-service
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "labels" | nindent 4 }}
+  annotations:
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "template_deployment_annotations" | nindent 4 }}
+spec:
+  progressDeadlineSeconds: 300
+  replicas: repl{{ ConfigOption "template_replica" }}
+  selector:
+    matchLabels:
+      app: template-service
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: template-service
+        kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "labels" | nindent 8 }}
+      annotations:
+        kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "template_podspec_annotations" | nindent 8 }}
+    spec:
+# repl{{ if ConfigOptionEquals "mode" "production_ha"}}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: template-service
+              topologyKey: kubernetes.io/hostname
+# repl{{ end }}
+      serviceAccountName: harness-default
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: template-service
+          image: harness/template-service-signed:74410
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+          ports:
+            - name: template-grpc
+              containerPort: 15011
+              protocol: "TCP"
+            - name: template-http
+              containerPort: 15001
+              protocol: "TCP"
+            - name: gitsync-grpc
+              containerPort: 16002
+              protocol: "TCP"
+          resources:
+            limits:
+              memory: 'repl{{ ConfigOption "template_pod_memory" }}Mi'
+              cpu: 'repl{{ ConfigOption "template_cpu" }}'
+            requests:
+              memory: 'repl{{ ConfigOption "template_pod_memory" }}Mi'
+              cpu: 'repl{{ ConfigOption "template_cpu" }}'
+          envFrom:
+            - configMapRef:
+                name: template-service
+            - secretRef:
+                name: template-service
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 15001
+            initialDelaySeconds: 60
+            timeoutSeconds: 5
+            periodSeconds: 5
+            failureThreshold: 8
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 15001
+            initialDelaySeconds: 40
+            timeoutSeconds: 5
+            periodSeconds: 10
+            failureThreshold: 20

@@ -1,0 +1,82 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pipeline-service
+  labels:
+    app: pipeline-service
+    kots.io/placeholder: 'true'
+    
+  annotations:  
+    kots.io/placeholder: 'true'
+            
+spec:
+  progressDeadlineSeconds: 300
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pipeline-service
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate      
+  template:
+    metadata:
+      labels:
+        app: pipeline-service
+        kots.io/placeholder: 'true'
+        
+      annotations:
+        license-features-hash: 'abc43bfad2c3c7274b66e21b998f581bf20ac8979a3705db18b8afec24d5f109'
+        kots.io/placeholder: 'true'
+         
+    spec:
+#                     
+      serviceAccountName: harness-default    
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: pipeline-service
+        image: harness/pipeline-service-signed:74410
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65534         
+        ports:
+          - name: pms-grpc
+            containerPort: 12011
+            protocol: "TCP"
+          - name: pms-http
+            containerPort: 12001
+            protocol: "TCP"
+          - name: gitsync-grpc
+            containerPort: 14002
+            protocol: "TCP"   
+        resources:
+          limits:
+            memory: '1400Mi'
+            cpu: '0.5'
+          requests:
+            memory: '1400Mi'
+            cpu: '0.5'
+        envFrom:
+        - configMapRef:
+            name: pipeline-service
+        - secretRef:
+            name: pipeline-service
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 12001
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          periodSeconds: 5
+          failureThreshold: 8
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 12001
+          initialDelaySeconds: 40
+          timeoutSeconds: 5
+          periodSeconds: 10
+          failureThreshold: 20

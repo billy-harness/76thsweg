@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: cv-nextgen
+stringData:
+  MONGO_URI: 'mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/cvng-harness?authSource=admin'
+  NOTIFICATION_MONGO_URI: 'mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/notifications?authSource=admin'
+  PMS_MONGO_URI: 'mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/pms-harness?authSource=admin'

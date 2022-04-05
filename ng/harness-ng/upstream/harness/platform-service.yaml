@@ -1,0 +1,214 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: platform-service
+data:
+  DEPLOY_MODE: KUBERNETES_ONPREM
+  GRPC_MANAGER_TARGET: harness-manager:9879
+  GRPC_MANAGER_AUTHORITY: default-authority.harness.io
+  MANAGER_CLIENT_BASEURL: 'repl{{ ConfigOption "loadbalancer_url" }}/api/'
+  SMTP_HOST: 'repl{{ ConfigOption "smtp_host" }}'
+  SMTP_PORT: 'repl{{ ConfigOption "smtp_port" }}'
+  SMTP_PASSWORD: 'repl{{ ConfigOption "smtp_password" }}'
+  SMTP_USERNAME: 'repl{{ ConfigOption "smtp_username" }}'
+  SMTP_USE_SSL: 'repl{{ ConfigOption "smtp_ssl" }}'
+  RBAC_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/ng/api/'
+  ENABLE_AUDIT_SERVICE: 'true'
+  ACCESS_CONTROL_BASE_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/authz/api/'
+  MOCK_ACCESS_CONTROL_SERVICE: 'false'
+  RESOURCE_GROUP_CLIENT_BASE_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/resourcegroup/api/'
+  NG_MANAGER_CLIENT_BASEURL: 'repl{{ ConfigOption "loadbalancer_url" }}/ng/api/'
+  PIPELINE_SERVICE_CLIENT_BASEURL: 'repl{{ ConfigOption "loadbalancer_url" }}/pipeline/api/'
+  TEMPLATE_SERVICE_CLIENT_BASEURL: 'repl{{ ConfigOption "loadbalancer_url" }}/template/api/'
+  AUDIT_CLIENT_BASEURL: 'repl{{ ConfigOption "loadbalancer_url" }}/audit/api/'
+  AUDIT_ENABLED: 'true'
+  ENABLE_RESOURCE_GROUP: 'true'
+  EVENTS_FRAMEWORK_USE_SENTINEL: 'true'
+  EVENTS_FRAMEWORK_SENTINEL_MASTER_NAME: 'harness-redis'
+  EVENTS_FRAMEWORK_REDIS_SENTINELS: 'redis://redis-sentinel-harness-announce-0.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-1.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-2.{{repl Namespace}}:26379'
+  LOCK_CONFIG_USE_SENTINEL: 'true'
+  LOCK_CONFIG_SENTINEL_MASTER_NAME: 'harness-redis'
+  LOCK_CONFIG_REDIS_SENTINELS: 'redis://redis-sentinel-harness-announce-0.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-1.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-2.{{repl Namespace}}:26379'
+  ACCESS_CONTROL_ENABLED: 'true'
+  LOGGING_LEVEL: 'repl{{ ConfigOption "app_log_level" }}'
+  TEMPLATE_SERVICE_BASE_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/templates/api/'
+  DISTRIBUTED_LOCK_IMPLEMENTATION: REDIS
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: platform-service
+stringData:
+  MONGO_URI: '{{repl if ConfigOptionEquals "mode" "production_ha"}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.{{repl Namespace}}.svc:27017/notifications?replicaSet=rs0&authSource=admin{{repl else}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc/notifications?authSource=admin{{repl end}}' 
+  AUDIT_MONGO_URI: '{{repl if ConfigOptionEquals "mode" "production_ha"}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.{{repl Namespace}}.svc:27017/audits?replicaSet=rs0&authSource=admin{{repl else}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc/audits?authSource=admin{{repl end}}' 
+  RESOURCE_GROUP_MONGO_URI: '{{repl if ConfigOptionEquals "mode" "production_ha"}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.{{repl Namespace}}.svc:27017/resource-groups?replicaSet=rs0&authSource=admin{{repl else}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc/resource-groups?authSource=admin{{repl end}}' 
+type: Opaque
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: platform-service
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 9005
+    protocol: TCP
+    targetPort: 9005
+  selector:
+    app: platform-service
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: notification-service
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    kubernetes.io/ingress.class: 'repl{{ ConfigOption "ingress_class_name" }}'
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "ingress_annotations" | nindent 4 }}
+spec:
+  rules:
+    - http:
+        paths:
+          - backend:
+              serviceName: platform-service
+              servicePort: 9005
+            path: /notifications(/|$)(.*)  
+# repl{{ if ConfigOptionEquals "scheme" "https"}}
+      host: '{{repl ConfigOption "host_name" }}'
+  tls:
+    - hosts:
+      - '{{repl ConfigOption "host_name" }}'
+      secretName: harness-cert  
+# repl{{ end }}          
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: audit-service
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    kubernetes.io/ingress.class: 'repl{{ ConfigOption "ingress_class_name" }}'
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "ingress_annotations" | nindent 4 }}
+spec:
+  rules:
+    - http:
+        paths:
+          - backend:
+              serviceName: platform-service
+              servicePort: 9005
+            path: /audit(/|$)(.*)  
+# repl{{ if ConfigOptionEquals "scheme" "https"}}
+      host: '{{repl ConfigOption "host_name" }}'
+  tls:
+    - hosts:
+      - '{{repl ConfigOption "host_name" }}'
+      secretName: harness-cert  
+# repl{{ end }} 
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: resourcegroup-service
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    kubernetes.io/ingress.class: 'repl{{ ConfigOption "ingress_class_name" }}'
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "ingress_annotations" | nindent 4 }}
+spec:
+  rules:
+    - http:
+        paths:
+          - backend:
+              serviceName: platform-service
+              servicePort: 9005
+            path: /resourcegroup(/|$)(.*)  
+# repl{{ if ConfigOptionEquals "scheme" "https"}}
+      host: '{{repl ConfigOption "host_name" }}'
+  tls:
+    - hosts:
+      - '{{repl ConfigOption "host_name" }}'
+      secretName: harness-cert  
+# repl{{ end }} 
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: platform-service
+  labels:
+    app: platform-service
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "labels" | nindent 4 }}
+  annotations:  
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "platform_service_deployment_annotations" | nindent 4 }}    
+spec:
+  progressDeadlineSeconds: 550
+  replicas: repl{{ ConfigOption "platform_service_replica" }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: platform-service
+  template:
+    metadata:
+      labels:
+        app: platform-service
+        kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "labels" | nindent 8 }}
+      annotations:
+        kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "platform_service_podspec_annotations" | nindent 8 }}         
+    spec:
+# repl{{ if ConfigOptionEquals "mode" "production_ha"}}      
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:	
+            - labelSelector:	
+                matchLabels:	
+                  app: platform-service
+              topologyKey: kubernetes.io/hostname
+# repl{{ end }}
+      serviceAccountName: harness-default      
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: platform-service
+        image: harness/platform-service-signed:74410
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 65534
+          runAsNonRoot: true        
+        ports:
+        - name: http
+          containerPort: 9005
+          protocol: "TCP"     
+        resources:
+          limits:
+            memory: 'repl{{ ConfigOption "platform_service_pod_memory" }}Mi'
+            cpu: 'repl{{ ConfigOption "platform_service_cpu" }}'
+          requests:
+            memory: 'repl{{ ConfigOption "platform_service_pod_memory" }}Mi'
+            cpu: 'repl{{ ConfigOption "platform_service_cpu" }}'
+        envFrom:
+        - configMapRef:
+            name: platform-service
+        - secretRef:
+            name: platform-service
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 9005
+          initialDelaySeconds: 100
+          timeoutSeconds: 10
+          periodSeconds: 10
+          failureThreshold: 20
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 9005
+          initialDelaySeconds: 300
+          timeoutSeconds: 10
+          periodSeconds: 10
+          failureThreshold: 20   

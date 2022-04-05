@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: next-gen-ui
+data:
+  API_URL: '35.202.24.14/gateway'
+  HARNESS_ENABLE_NG_AUTH_UI_PLACEHOLDER: "true"

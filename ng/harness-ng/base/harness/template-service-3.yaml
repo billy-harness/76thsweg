@@ -1,0 +1,19 @@
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: template-service
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    kubernetes.io/ingress.class: 'harness'
+    kots.io/placeholder: 'true'
+    
+spec:
+  rules:
+    - http:
+        paths:
+          - backend:
+              serviceName: template-service
+              servicePort: 15001
+            path: /template(/|$)(.*)
+# 

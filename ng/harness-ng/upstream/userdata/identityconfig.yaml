@@ -1,0 +1,22 @@
+apiVersion: kots.io/v1beta1
+kind: IdentityConfig
+metadata:
+  creationTimestamp: null
+  name: identity
+spec:
+  clientID: harness-ng
+  clientSecret:
+    valueEncrypted: LhW3kr9HIjc3qrBP8arhh7YDY4B3EFyMiRTtsV4crOHn+trb0NMDjKUybw==
+  dexConnectors:
+    valueEncrypted: cleWx2LDcRm6mtOUU6zgLr4zi8U=
+  enabled: false
+  ingressConfig:
+    enabled: false
+  storage:
+    postgresConfig:
+      database: harness-ng-dex
+      host: kotsadm-postgres.harness
+      password:
+        valueEncrypted: LhW3kr9GClM9pu8W7bDQmvM0ZJ0iOn3Qjh7JyfrHZvG+XVzV/dPoBnUGPg==
+      user: harness-ng-dex
+status: {}

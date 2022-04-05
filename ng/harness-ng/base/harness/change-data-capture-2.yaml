@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: change-data-capture
+stringData:
+  MONGO_URI: 'mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/harness?authSource=admin'
+  EVENTS_MONGO_URI: 'mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/events?authSource=admin'
+  PMS_MONGO_URI: 'mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/pms-harness?authSource=admin'
+  CDC_MONGO_URI: 'mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/change-data-capture?authSource=admin'
+  NG_HARNESS_MONGO_URI: 'mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/ng-harness?authSource=admin'
+  TIMESCALEDB_URI: 'jdbc:postgresql://timescaledb-single-chart.harness:5432/harness'
+  TIMESCALEDB_PASSWORD: kXsMSRiREYXiMciUwMdj
+  TIMESCALEDB_USERNAME: postgres
+type: Opaque

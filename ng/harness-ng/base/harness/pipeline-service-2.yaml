@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: pipeline-service
+stringData:
+  MONGO_URI: 'mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/pms-harness?authSource=admin'
+  NOTIFICATION_MONGO_URI: 'mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/notifications?authSource=admin'
+  TIMESCALE_URI: 'jdbc:postgresql://timescaledb-single-chart.harness:5432/harness'
+  TIMESCALE_PASSWORD: kXsMSRiREYXiMciUwMdj
+  TIMESCALEDB_USERNAME: postgres       

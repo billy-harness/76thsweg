@@ -1,0 +1,126 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: next-gen-ui
+data:
+  API_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/gateway'
+  HARNESS_ENABLE_NG_AUTH_UI_PLACEHOLDER: "true"
+---
+
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: next-gen-ui
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    kubernetes.io/ingress.class: 'repl{{ ConfigOption "ingress_class_name" }}'
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "ingress_annotations" | nindent 4 }}
+spec:
+  rules:
+    - http:
+        paths:
+          - backend:
+              serviceName: next-gen-ui
+              servicePort: 80
+            path: /ng(/|$)(.*)
+# repl{{ if ConfigOptionEquals "scheme" "https"}}
+      host: '{{repl ConfigOption "host_name" }}'
+  tls:
+    - hosts:
+      - '{{repl ConfigOption "host_name" }}'
+      secretName: harness-cert  
+# repl{{ end }}                 
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: next-gen-ui
+  labels:
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "labels" | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: next-gen-ui
+  sessionAffinity: None  
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: next-gen-ui
+  labels:
+    app: next-gen-ui
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "labels" | nindent 4 }}
+  annotations:  
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "ng_ui_deployment_annotations" | nindent 4 }}    
+spec:
+  replicas: repl{{ ConfigOption "ng_ui_replica" }}
+  selector:
+    matchLabels:
+      app: next-gen-ui
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate    
+  template:
+    metadata:
+      labels:
+        app: next-gen-ui
+        kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "labels" | nindent 8 }}
+      annotations:
+        license-features-hash: '{{repl (sha256sum (print (LicenseFieldValue "license") (LicenseFieldValue "feature_flag") (ConfigOption "mode") (ConfigOption "loadbalancer_url") )) }}'
+        kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "ng_ui_podspec_annotations" | nindent 8 }}         
+    spec:
+# repl{{ if ConfigOptionEquals "mode" "production_ha"}}      
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:	
+            - labelSelector:	
+                matchLabels:	
+                  app: next-gen-ui
+              topologyKey: kubernetes.io/hostname
+# repl{{ end }}                
+      serviceAccountName: harness-default               
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: next-gen-ui
+        image: harness/nextgenui-signed:0.292.8
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 101
+          runAsNonRoot: true 
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: ng-ui-port
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: ng-ui-port
+          initialDelaySeconds: 100
+          periodSeconds: 20
+          failureThreshold: 2
+        ports:
+        - name: ng-ui-port
+          containerPort: 8080
+          protocol: "TCP"
+        resources:
+          limits:
+            memory: 'repl{{ ConfigOption "ng_ui_memory" }}Mi'
+            cpu: 'repl{{ ConfigOption "ng_ui_cpu" }}'
+          requests:
+            memory: 'repl{{ ConfigOption "ng_ui_memory" }}Mi'
+            cpu: 'repl{{ ConfigOption "ng_ui_cpu" }}'
+        envFrom:
+        - configMapRef:
+            name: next-gen-ui

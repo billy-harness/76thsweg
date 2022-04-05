@@ -1,0 +1,208 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: access-control
+data:
+  DEPLOY_MODE: KUBERNETES_ONPREM
+  LOGGING_LEVEL: 'repl{{ ConfigOption "app_log_level" }}' 
+  EVENTS_CONFIG_USE_SENTINEL: 'true'
+  EVENTS_CONFIG_SENTINEL_MASTER_NAME: 'harness-redis'
+  EVENTS_CONFIG_REDIS_SENTINELS: 'redis://redis-sentinel-harness-announce-0.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-1.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-2.{{repl Namespace}}:26379'
+
+  # lockRedisConfig
+  LOCK_CONFIG_USE_SENTINEL: 'true'
+  LOCK_CONFIG_SENTINEL_MASTER_NAME: 'harness-redis'
+  LOCK_CONFIG_REDIS_SENTINELS: 'redis://redis-sentinel-harness-announce-0.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-1.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-2.{{repl Namespace}}:26379'
+
+  # iteratorsConfig
+  RESOURCE_GROUP_ITERATOR_ENABLED: 'true'
+  RESOURCE_GROUP_ITERATOR_INTERVAL: '3600'
+  USER_GROUP_ITERATOR_ENABLED: 'true'
+  USER_GROUP_ITERATOR_INTERVAL: '3600'
+  USER_ITERATOR_ENABLED: 'true'
+  USER_ITERATOR_INTERVAL: '3600'
+  SERVICEACCOUNT_ITERATOR_ENABLED: 'true'
+  SERVICEACCOUNT_ITERATOR_INTERVAL: '3600'
+  SUPPORTPREFERENCE_ITERATOR_ENABLED: 'true'
+  SUPPORTPREFERENCE_ITERATOR_INTERVAL: '600'
+  SCOPE_ITERATOR_ENABLED: 'true'
+  SCOPE_ITERATOR_INTERVAL: '3600'
+
+  # resourceGroupClient:
+  RESOURCE_GROUP_CLIENT_BASE_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/resourcegroup/api/'
+
+  # userClient:
+  USER_CLIENT_BASE_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/ng/api/'
+
+  # userGroupClient
+  USER_GROUP_CLIENT_BASE_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/ng/api/'
+
+  # serviceAccountClient
+  SERVICEACCOUNT_CLIENT_BASE_URL : 'repl{{ ConfigOption "loadbalancer_url" }}/ng/api/'
+
+  #accountClient
+  ACCOUNT_CLIENT_BASE_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/api/'
+  FEATURE_FLAG_CLIENT_BASE_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/api/'
+
+  #projectClient
+  PROJECT_CLIENT_BASE_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/ng/api/'
+
+  #organizationClient
+  ORGANIZATION_CLIENT_BASE_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/ng/api/'
+
+  # aggreatorModuleConfig
+  OFFSET_FLUSH_INTERVAL_MS: '10000'
+  MONGODB_HOSTS: '{{repl if ConfigOptionEquals "mode" "production_ha"}}mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc:27017,mongodb-replicaset-chart-1.mongodb-replicaset-chart.{{repl Namespace}}.svc:27017,mongodb-replicaset-chart-2.mongodb-replicaset-chart.{{repl Namespace}}.svc:27017{{repl else}}mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc:27017{{repl end}}'
+  MONGODB_USER: admin
+  MONGODB_SSL_ENABLED: 'false'
+  AGGREGATOR_ENABLED: 'true'
+
+  # auth
+  ENABLE_AUTH: 'true'
+
+  # preference
+  ACCESS_CONTROL_PREFERENCE_ENABLED: 'true'
+
+  #for notification
+  NOTIFICATION_SLACK_WEBHOOK_URL: 'repl{{ ConfigOption "slack_webhook_url" }}'
+  NOTIFICATION_ENVIRONMENT: ONPREM
+
+
+  # for client
+  ENABLE_ACCESS_CONTROL: 'false'
+  ACCESS_CONTROL_SERVICE_BASE_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/authz/api/'
+
+  ENABLE_AUDIT: 'true'
+  AUDIT_CLIENT_BASE_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/audit/api/'
+
+  DISTRIBUTED_LOCK_IMPLEMENTATION: redis
+
+  GOOGLE_APPLICATION_CREDENTIALS: /opt/harness/monitoring/stackdriver.json
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name:  access-control
+stringData:
+  MONGO_URI: '{{repl if ConfigOptionEquals "mode" "production_ha"}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.{{repl Namespace}}.svc:27017/accesscontrol?replicaSet=rs0&authSource=admin{{repl else}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc/accesscontrol?authSource=admin{{repl end}}' 
+  OFFSET_STORAGE_FILE_FILENAME: '{{repl if ConfigOptionEquals "mode" "production_ha"}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.{{repl Namespace}}.svc:27017/accesscontrol?replicaSet=rs0&authSource=admin{{repl else}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc/accesscontrol?authSource=admin{{repl end}}' 
+  MONGODB_PASSWORD: CA8FMywpbM
+  IDENTITY_SERVICE_SECRET: HVSKUYqD4e5Rxu12hFDdCJKGM64sxgEynvdDhaOHaTHhwwn0K4Ttr0uoOxSsEVYNrUU=
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name:  access-control
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 9006
+    protocol: TCP
+    targetPort: 9006
+  selector:
+    app:  access-control
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: access-control
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    kubernetes.io/ingress.class: 'repl{{ ConfigOption "ingress_class_name" }}'
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "ingress_annotations" | nindent 4 }}  
+spec:
+  rules:
+    - http:
+        paths:
+          - backend:
+              serviceName: access-control
+              servicePort: 9006
+            path: /authz(/|$)(.*)  
+# repl{{ if ConfigOptionEquals "scheme" "https"}}
+      host: '{{repl ConfigOption "host_name" }}'
+  tls:
+    - hosts:
+      - '{{repl ConfigOption "host_name" }}'
+      secretName: harness-cert  
+# repl{{ end }}         
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  access-control
+  labels:
+    app:  access-control
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "labels" | nindent 4 }}
+  annotations:  
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "acs_deployment_annotations" | nindent 4 }}    
+spec:
+  progressDeadlineSeconds: 720
+  replicas: repl{{ ConfigOption "access_control_replica" }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: access-control
+  template:
+    metadata:
+      labels:
+        app: access-control
+        kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "labels" | nindent 8 }}
+      annotations:
+        kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "acs_podspec_annotations" | nindent 8 }}         
+    spec:
+# repl{{ if ConfigOptionEquals "mode" "production_ha"}}      
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:	
+            - labelSelector:	
+                matchLabels:	
+                  app: access-control
+              topologyKey: kubernetes.io/hostname
+# repl{{ end }}
+      serviceAccountName: harness-default    
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: access-control
+        image: harness/accesscontrol-service-signed:74400
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 65534
+          runAsNonRoot: true        
+        ports:
+        - name: http
+          containerPort: 9006
+          protocol: "TCP"     
+        resources:
+          limits:
+            memory: 'repl{{ ConfigOption "accesscontrol_service_pod_memory" }}Mi'
+            cpu: 'repl{{ ConfigOption "accesscontrol_service_cpu" }}'
+          requests:
+            memory: 'repl{{ ConfigOption "accesscontrol_service_pod_memory" }}Mi'
+            cpu: 'repl{{ ConfigOption "accesscontrol_service_cpu" }}'
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 9006
+          initialDelaySeconds: 200
+          timeoutSeconds: 20
+          periodSeconds: 10
+          failureThreshold: 40
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 9006
+          initialDelaySeconds: 200
+          timeoutSeconds: 20
+          periodSeconds: 10
+          failureThreshold: 40
+        envFrom:
+        - configMapRef:
+            name: access-control
+        - secretRef:
+            name: access-control      

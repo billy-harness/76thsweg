@@ -1,0 +1,169 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cv-nextgen
+data:
+  DEPLOY_MODE: KUBERNETES_ONPREM
+
+  ENV: KUBERNETES_ONPREM
+
+  LOGGING_LEVEL: 'repl{{ ConfigOption "app_log_level" }}'
+  MANAGER_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/api/'
+
+  NG_MANAGER_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/ng/api/'
+  MEMORY: 'repl{{ ConfigOption "cv-nextgen_memory" }}'
+  STACK_DRIVER_LOGGING_ENABLED: "false"
+  VERIFICATION_PORT: "6060"
+
+  VERIFICATION_SERVICE_SECRET: 59MR5RlVARcdH7zb7pNx6GzqiglBmXR8
+  NOTIFICATION_BASE_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/notifications/api/'
+  PORTAL_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/api/'
+  MANAGER_CLIENT_BASEURL: 'repl{{ ConfigOption "loadbalancer_url" }}/'
+  EEVENTS_FRAMEWORK_REDIS_URL: 'redis://localhost:6379'
+  EVENTS_FRAMEWORK_USE_SENTINEL: "true"
+  EVENTS_FRAMEWORK_SENTINEL_MASTER_NAME: 'harness-redis'
+  EVENTS_FRAMEWORK_REDIS_SENTINELS: 'redis://redis-sentinel-harness-announce-0.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-1.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-2.{{repl Namespace}}:26379'
+  SHOULD_CONFIGURE_WITH_PMS: "true"
+  PMS_TARGET: pipeline-service:12011
+  PMS_AUTHORITY: default-authority.harness.io
+  GRPC_SERVER_PORT: "9979"
+  CACHE_CONFIG_REDIS_URL: 'redis://localhost:6379'
+  CACHE_BACKEND: "REDIS"
+  CACHE_CONFIG_REDIS_SENTINELS: 'redis://redis-sentinel-harness-announce-0.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-1.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-2.{{repl Namespace}}:26379'
+  CACHE_CONFIG_SENTINEL_MASTER_NAME: "harness-redis"
+  CACHE_CONFIG_USE_SENTINEL: "true"
+
+  MOCK_ACCESS_CONTROL_SERVICE: "false"
+  ACCESS_CONTROL_BASE_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/authz/api/'
+  ACCESS_CONTROL_ENABLED: "true"
+---
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: cv-nextgen
+stringData:
+  MONGO_URI: '{{repl if ConfigOptionEquals "mode" "production_ha"}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.{{repl Namespace}}.svc:27017/cvng-harness?replicaSet=rs0&authSource=admin{{repl else}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc/cvng-harness?authSource=admin{{repl end}}'
+  NOTIFICATION_MONGO_URI: '{{repl if ConfigOptionEquals "mode" "production_ha"}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.{{repl Namespace}}.svc:27017/notifications?replicaSet=rs0&authSource=admin{{repl else}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc/notifications?authSource=admin{{repl end}}'
+  PMS_MONGO_URI: '{{repl if ConfigOptionEquals "mode" "production_ha"}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.{{repl Namespace}}.svc:27017/pms-harness?replicaSet=rs0&authSource=admin{{repl else}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc/pms-harness?authSource=admin{{repl end}}'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cv-nextgen
+spec:
+  ports:
+    - name: cv
+      port: 6060
+      protocol: TCP
+      targetPort: cv
+    - name: cv-nextgen-grpc
+      port: 9979
+      protocol: TCP
+      targetPort: 9979
+  selector:
+    app: cv-nextgen
+  type: ClusterIP
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: cv-nextgen
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /cv/api/$2
+    kubernetes.io/ingress.class: 'repl{{ ConfigOption "ingress_class_name" }}'
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "ingress_annotations" | nindent 4 }}
+spec:
+  rules:
+    - http:
+        paths:
+          - backend:
+              serviceName: cv-nextgen
+              servicePort: 6060
+            path: /cv/api(/|$)(.*)
+      # repl{{ if ConfigOptionEquals "scheme" "https"}}
+      host: '{{repl ConfigOption "host_name" }}'
+  tls:
+    - hosts:
+        - '{{repl ConfigOption "host_name" }}'
+      secretName: harness-cert
+# repl{{ end }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cv-nextgen
+  labels:
+    app: cv-nextgen
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "cv-nextgen_labels" | nindent 4 }}
+  annotations:
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "cv-nextgen_deployment_annotations" | nindent 4 }}
+spec:
+  replicas: repl{{ ConfigOption "cv-nextgen_replica" }}
+  selector:
+    matchLabels:
+      app: cv-nextgen
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: cv-nextgen
+        kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "cv-nextgen_labels" | nindent 8 }}
+      annotations:
+        kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "cv-nextgen_podspec_annotations" | nindent 8 }}
+        license-features-hash: '{{repl (sha256sum (print (LicenseFieldValue "license") (LicenseFieldValue "feature_flag") (ConfigOption "mode") (ConfigOption "loadbalancer_url") )) }}'
+    spec:
+# repl{{ if ConfigOptionEquals "mode" "production_ha"}}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: cv-nextgen
+              topologyKey: kubernetes.io/hostname
+# repl{{ end }}
+      serviceAccountName: harness-default
+      containers:
+      - name: cv-nextgen
+        image: harness/cv-nextgen:74410
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65534
+        envFrom:
+          - configMapRef:
+              name: cv-nextgen
+          - secretRef:
+              name: cv-nextgen
+        resources:
+          limits:
+            memory: 'repl{{ ConfigOption "cvnextgen_pod_memory" }}Mi'
+            cpu: 'repl{{ ConfigOption "cvnextgen_cpu" }}'
+          requests:
+            memory: 'repl{{ ConfigOption "cvnextgen_pod_memory" }}Mi'
+            cpu: 'repl{{ ConfigOption "cvnextgen_cpu" }}'
+        readinessProbe:
+          httpGet:
+            path: /cv/api/health
+            port: cv
+          initialDelaySeconds: 60
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /cv/api/health
+            port: cv
+          initialDelaySeconds: 300
+          periodSeconds: 10
+          failureThreshold: 2
+        ports:
+          - name: cv
+            containerPort: 6060
+            protocol: "TCP"
+          - name: cv-ng-grpc
+            containerPort: 9979
+            protocol: "TCP"

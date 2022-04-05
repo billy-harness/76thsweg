@@ -1,0 +1,18 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ci-manager
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    kubernetes.io/ingress.class: 'harness'
+    kots.io/placeholder: 'true'
+    
+spec:
+  rules:
+    - http:
+        paths:
+          - backend:
+              serviceName: ci-manager
+              servicePort: 7090
+            path: /ci(/|$)(.*)
+#              

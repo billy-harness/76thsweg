@@ -1,0 +1,191 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ci-manager
+data:
+  CACHE_BACKEND: "REDIS"
+  CACHE_CONFIG_REDIS_SENTINELS: 'redis://redis-sentinel-harness-announce-0.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-1.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-2.{{repl Namespace}}:26379'
+  CACHE_CONFIG_SENTINEL_MASTER_NAME: "harness-redis"
+  CACHE_CONFIG_USE_SENTINEL: "true"
+  DEPLOY_MODE: KUBERNETES_ONPREM
+  NG_MANAGER_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/ng/api/'
+  MANAGER_TARGET: harness-manager:9879
+  MANAGER_AUTHORITY: default-authority.harness.io
+  GRPC_SERVER_PORT: "9979"
+  MANAGER_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/api/'
+  SCM_SERVICE_URI: "scm:8091"
+  LOG_SERVICE_ENDPOINT: 'repl{{ ConfigOption "loadbalancer_url" }}/log-service/'
+  TI_SERVICE_ENDPOINT: 'repl{{ ConfigOption "loadbalancer_url" }}/ti-service/'
+  ADDON_IMAGE: 'repl{{ LocalImageName "harness/ci-addon:release-97" }}'
+  LE_IMAGE: 'repl{{ LocalImageName "harness/ci-lite-engine:release-34" }}'
+  GIT_CLONE_IMAGE: 'repl{{ LocalImageName "harness/drone-git:1.0.6-rootless-linux-amd64" }}'
+  DOCKER_PUSH_IMAGE: 'repl{{ LocalImageName "plugins/kaniko:1.3.1" }}'
+  ECR_PUSH_IMAGE:  'repl{{ LocalImageName "plugins/kaniko-ecr:1.3.1" }}'
+  GCR_PUSH_IMAGE: 'repl{{ LocalImageName "plugins/kaniko-gcr:1.3.1" }}'
+  GCS_UPLOAD_IMAGE: 'repl{{ LocalImageName "plugins/gcs:1.2.4" }}'
+  S3_UPLOAD_IMAGE: 'repl{{ LocalImageName "plugins/s3:1.0.3" }}'
+  ARTIFACTORY_UPLOAD_IMAGE: 'repl{{ LocalImageName "plugins/artifactory:1.0.4" }}'
+  GCS_CACHE_IMAGE: 'repl{{ LocalImageName "plugins/cache:1.3.5" }}'
+  S3_CACHE_IMAGE: 'repl{{ LocalImageName "plugins/cache:1.3.5" }}'
+  PMS_TARGET:  pipeline-service:12011
+  PMS_AUTHORITY:  default-authority.harness.io
+  LOGGING_LEVEL: 'repl{{ ConfigOption "app_log_level" }}' 
+  EVENTS_FRAMEWORK_REDIS_URL: 'redis://localhost:6379'
+  EVENTS_FRAMEWORK_USE_SENTINEL: "true"
+  EVENTS_FRAMEWORK_SENTINEL_MASTER_NAME: 'harness-redis'
+  EVENTS_FRAMEWORK_REDIS_SENTINELS: 'redis://redis-sentinel-harness-announce-0.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-1.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-2.{{repl Namespace}}:26379'
+  SHOULD_CONFIGURE_WITH_PMS: "true"
+  ENABLE_DASHBOARD_TIMESCALE: "true"  
+  API_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/ng/#/'
+  MEMORY: 'repl{{ ConfigOption "ci_manager_memory" }}'
+  USE_REDIS_FOR_SDK_RESPONSE_EVENTS: "true"
+# repl{{ if (IsAirgap) }}  
+  DEFAULT_INTERNAL_IMAGE_CONNECTOR: account.harnessImage
+# repl{{ end }}  
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ci-manager
+stringData:
+  MONGO_URI: '{{repl if ConfigOptionEquals "mode" "production_ha"}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.{{repl Namespace}}.svc:27017/harness?replicaSet=rs0&authSource=admin{{repl else}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc/harness?authSource=admin{{repl end}}'
+  CIMANAGER_MONGO_URI: '{{repl if ConfigOptionEquals "mode" "production_ha"}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.{{repl Namespace}}.svc:27017/harness-ci?replicaSet=rs0&authSource=admin{{repl else}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc/harness-ci?authSource=admin{{repl end}}'
+  PMS_MONGO_URI: '{{repl if ConfigOptionEquals "mode" "production_ha"}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.{{repl Namespace}}.svc:27017/pms-harness?replicaSet=rs0&authSource=admin{{repl else}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc/pms-harness?authSource=admin{{repl end}}'
+  LOG_SERVICE_GLOBAL_TOKEN: c76e567a-b341-404d-a8dd-d9738714eb82
+  TI_SERVICE_GLOBAL_TOKEN: 78d16b66-4b4c-11eb-8377-acde48001122
+  TIMESCALE_URI: 'jdbc:postgresql://timescaledb-single-chart.{{repl Namespace}}:5432/harness'
+  TIMESCALE_PASSWORD: kXsMSRiREYXiMciUwMdj
+  TIMESCALEDB_USERNAME: postgres     
+type: Opaque
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ci-manager
+  labels:
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "labels" | nindent 4 }} 
+spec:
+  type: ClusterIP
+  ports:
+  - name: ci-manager
+    port: 7090
+    protocol: TCP
+    targetPort: 7090
+  - name: ci-manager-grpc
+    port: 9979
+    protocol: TCP
+    targetPort: 9979     
+  selector:
+    app: ci-manager
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ci-manager
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    kubernetes.io/ingress.class: 'repl{{ ConfigOption "ingress_class_name" }}'
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "ingress_annotations" | nindent 4 }}
+spec:
+  rules:
+    - http:
+        paths:
+          - backend:
+              serviceName: ci-manager
+              servicePort: 7090
+            path: /ci(/|$)(.*)
+# repl{{ if ConfigOptionEquals "scheme" "https"}}
+      host: '{{repl ConfigOption "host_name" }}'
+  tls:
+    - hosts:
+      - '{{repl ConfigOption "host_name" }}'
+      secretName: harness-cert  
+# repl{{ end }}             
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ci-manager
+  labels:
+    app: ci-manager
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "labels" | nindent 4 }}
+  annotations:  
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "ci_manager_deployment_annotations" | nindent 4 }}         
+spec:
+  progressDeadlineSeconds: 300
+  replicas: repl{{ ConfigOption "ci_manager_replica" }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: ci-manager
+  template:
+    metadata:
+      labels:
+        app: ci-manager
+        kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "labels" | nindent 8 }}           
+      annotations:
+        license-features-hash: '{{repl (sha256sum (print (LicenseFieldValue "license") (LicenseFieldValue "feature_flag") (ConfigOption "mode") (ConfigOption "loadbalancer_url") )) }}'
+        kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "ci_manager_podspec_annotations" | nindent 8 }}  
+    spec:
+# repl{{ if ConfigOptionEquals "mode" "production_ha"}}      
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:	
+            - labelSelector:	
+                matchLabels:	
+                  app: ci-manager
+              topologyKey: kubernetes.io/hostname
+# repl{{ end }}                
+      serviceAccountName: harness-default
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: ci-manager
+        image: harness/ci-manager-signed:74410
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 65534
+          runAsNonRoot: true
+        ports:
+        - name: http-ci-manager
+          containerPort: 7090
+          protocol: "TCP"
+        - name: ci-manager-grpc
+          containerPort: 9979
+          protocol: "TCP"              
+        resources:
+          limits:
+            memory: 'repl{{ ConfigOption "ci_manager_pod_memory" }}Mi'
+            cpu: 'repl{{ ConfigOption "ci_manager_cpu" }}'
+          requests:
+            memory: 'repl{{ ConfigOption "ci_manager_pod_memory" }}Mi'
+            cpu: 'repl{{ ConfigOption "ci_manager_cpu" }}'
+        envFrom:
+        - configMapRef:
+            name: ci-manager
+        - secretRef:
+            name: ci-manager
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http-ci-manager
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          periodSeconds: 5
+          failureThreshold: 8
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http-ci-manager
+          initialDelaySeconds: 40
+          timeoutSeconds: 5
+          periodSeconds: 10
+          failureThreshold: 20

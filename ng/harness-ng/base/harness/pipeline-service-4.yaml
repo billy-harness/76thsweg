@@ -1,0 +1,25 @@
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: pipeline-service
+  labels:
+    kots.io/placeholder: 'true'
+    
+spec:
+  type: ClusterIP
+  ports:
+  - name: pms-grpc
+    port: 12011
+    protocol: TCP
+    targetPort: 12011
+  - name: pms-http
+    port: 12001
+    protocol: TCP
+    targetPort: 12001
+  - name: gitsync-grpc
+    port: 14002
+    protocol: TCP
+    targetPort: 14002     
+  selector:
+    app: pipeline-service

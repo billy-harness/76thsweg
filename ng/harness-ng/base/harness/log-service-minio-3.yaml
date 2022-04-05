@@ -1,0 +1,19 @@
+
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: log-service-minio
+  annotations:
+    kubernetes.io/ingress.class: 'harness'
+    kots.io/placeholder: 'true'
+    
+spec:
+  rules:
+    - http:
+        paths:
+          - backend:
+              serviceName: log-service-minio
+              servicePort: 9000
+            path: /minio
+#              

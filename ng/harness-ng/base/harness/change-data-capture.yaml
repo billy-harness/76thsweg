@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: change-data-capture
+data:
+  DEPLOY_MODE: KUBERNETES
+  MEMORY: '2048'
+  MONGO_TAG_NAME: none
+  MONGO_TAG_VALUE: none

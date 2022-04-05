@@ -1,0 +1,199 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pipeline-service
+data:
+  CACHE_BACKEND: "REDIS"
+  CACHE_CONFIG_REDIS_SENTINELS: 'redis://redis-sentinel-harness-announce-0.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-1.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-2.{{repl Namespace}}:26379'
+  CACHE_CONFIG_SENTINEL_MASTER_NAME: "harness-redis"
+  CACHE_CONFIG_USE_SENTINEL: "true"
+  DEPLOY_MODE: KUBERNETES_ONPREM
+  LOGGING_LEVEL: 'repl{{ ConfigOption "app_log_level" }}' 
+  MEMORY: 'repl{{ ConfigOption "pms_memory" }}m'
+  MANAGER_TARGET: harness-manager:9879
+  MANAGER_AUTHORITY: default-authority.harness.io
+  MANAGER_CLIENT_BASEURL: 'repl{{ ConfigOption "loadbalancer_url" }}/api/'
+  GRPC_SERVER_PORT: "12011"
+  NG_MANAGER_TARGET: ng-manager:9979
+  NG_MANAGER_AUTHORITY: default-authority.harness.io
+  NG_MANAGER_GITSYNC_TARGET: ng-manager:13002
+  NG_MANAGER_GITSYNC_AUTHORITY: default-authority.harness.io
+  CI_MANAGER_TARGET: ci-manager:9979
+  CI_MANAGER_AUTHORITY: default-authority.harness.io
+  SCM_SERVICE_URI: "scm:8091"
+  CI_MANAGER_BASE_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/ci/'
+  CV_MANAGER_BASE_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/cv/api/'
+  CVNG_MANAGER_TARGET: cv-nextgen:9979
+  CVNG_MANAGER_AUTHORITY: default-authority.harness.io
+  EVENTS_FRAMEWORK_REDIS_URL: 'redis://localhost:6379'
+  EVENTS_FRAMEWORK_USE_SENTINEL: "true"
+  EVENTS_FRAMEWORK_SENTINEL_MASTER_NAME: 'harness-redis'
+  EVENTS_FRAMEWORK_REDIS_SENTINELS: 'redis://redis-sentinel-harness-announce-0.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-1.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-2.{{repl Namespace}}:26379'
+  PIPELINE_SERVICE_BASE_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/ng/#'
+  PMS_API_BASE_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/pipeline/api/'
+  LOG_STREAMING_SERVICE_BASEURL: 'repl{{ ConfigOption "loadbalancer_url" }}/log-service/'
+  MANAGER_BASE_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/api/'
+  NG_MANAGER_BASE_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/ng/api/'
+  AUTH_ENABLED: "true"
+  WEBHOOK_TRIGGER_BASEURL: 'repl{{ ConfigOption "loadbalancer_url" }}/ng/api/'
+  CUSTOM_TRIGGER_BASEURL: 'repl{{ ConfigOption "loadbalancer_url" }}/pipeline/api/'
+  USE_REDIS_FOR_INTERRUPTS: "true"
+  USE_REDIS_FOR_ORCHESTRATION_EVENTS: "true"
+  USE_REDIS_FOR_SDK_RESPONSE_EVENTS: "true"
+  MOCK_ACCESS_CONTROL_SERVICE: "false"
+  ACCESS_CONTROL_ENABLED: "true"
+  ENABLE_DASHBOARD_TIMESCALE: "true"
+  ACCESS_CONTROL_BASE_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/authz/api/'
+  NOTIFICATION_BASE_URL: 'repl{{ ConfigOption "loadbalancer_url" }}/notifications/api/'
+  TEMPLATE_SERVICE_ENDPOINT: 'repl{{ ConfigOption "loadbalancer_url" }}/template/api/'
+  SHOULD_USE_INSTANCE_CACHE: "false"
+---
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: pipeline-service
+stringData:
+  MONGO_URI: '{{repl if ConfigOptionEquals "mode" "production_ha"}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.{{repl Namespace}}.svc:27017/pms-harness?replicaSet=rs0&authSource=admin{{repl else}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc/pms-harness?authSource=admin{{repl end}}'
+  NOTIFICATION_MONGO_URI: '{{repl if ConfigOptionEquals "mode" "production_ha"}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.{{repl Namespace}}.svc:27017/notifications?replicaSet=rs0&authSource=admin{{repl else}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc/notifications?authSource=admin{{repl end}}'
+  TIMESCALE_URI: 'jdbc:postgresql://timescaledb-single-chart.{{repl Namespace}}:5432/harness'
+  TIMESCALE_PASSWORD: kXsMSRiREYXiMciUwMdj
+  TIMESCALEDB_USERNAME: postgres       
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: pipeline-service
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    kubernetes.io/ingress.class: 'repl{{ ConfigOption "ingress_class_name" }}'
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "ingress_annotations" | nindent 4 }}
+spec:
+  rules:
+    - http:
+        paths:
+          - backend:
+              serviceName: pipeline-service
+              servicePort: 12001
+            path: /pipeline(/|$)(.*)
+# repl{{ if ConfigOptionEquals "scheme" "https"}}
+      host: '{{repl ConfigOption "host_name" }}'
+  tls:
+    - hosts:
+      - '{{repl ConfigOption "host_name" }}'
+      secretName: harness-cert  
+# repl{{ end }}           
+          
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: pipeline-service
+  labels:
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "labels" | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+  - name: pms-grpc
+    port: 12011
+    protocol: TCP
+    targetPort: 12011
+  - name: pms-http
+    port: 12001
+    protocol: TCP
+    targetPort: 12001
+  - name: gitsync-grpc
+    port: 14002
+    protocol: TCP
+    targetPort: 14002     
+  selector:
+    app: pipeline-service
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pipeline-service
+  labels:
+    app: pipeline-service
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "labels" | nindent 4 }}
+  annotations:  
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "pms_deployment_annotations" | nindent 4 }}        
+spec:
+  progressDeadlineSeconds: 300
+  replicas: repl{{ ConfigOption "pms_replica" }}
+  selector:
+    matchLabels:
+      app: pipeline-service
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate      
+  template:
+    metadata:
+      labels:
+        app: pipeline-service
+        kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "labels" | nindent 8 }}
+      annotations:
+        license-features-hash: '{{repl (sha256sum (print (LicenseFieldValue "license") (LicenseFieldValue "feature_flag") (ConfigOption "mode") (ConfigOption "loadbalancer_url") )) }}'
+        kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "pms_podspec_annotations" | nindent 8 }} 
+    spec:
+# repl{{ if ConfigOptionEquals "mode" "production_ha"}}      
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:	
+            - labelSelector:	
+                matchLabels:	
+                  app: pipeline-service
+              topologyKey: kubernetes.io/hostname
+# repl{{ end }}                    
+      serviceAccountName: harness-default    
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: pipeline-service
+        image: harness/pipeline-service-signed:74410
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65534         
+        ports:
+          - name: pms-grpc
+            containerPort: 12011
+            protocol: "TCP"
+          - name: pms-http
+            containerPort: 12001
+            protocol: "TCP"
+          - name: gitsync-grpc
+            containerPort: 14002
+            protocol: "TCP"   
+        resources:
+          limits:
+            memory: 'repl{{ ConfigOption "pms_pod_memory" }}Mi'
+            cpu: 'repl{{ ConfigOption "pms_cpu" }}'
+          requests:
+            memory: 'repl{{ ConfigOption "pms_pod_memory" }}Mi'
+            cpu: 'repl{{ ConfigOption "pms_cpu" }}'
+        envFrom:
+        - configMapRef:
+            name: pipeline-service
+        - secretRef:
+            name: pipeline-service
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 12001
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          periodSeconds: 5
+          failureThreshold: 8
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 12001
+          initialDelaySeconds: 40
+          timeoutSeconds: 5
+          periodSeconds: 10
+          failureThreshold: 20

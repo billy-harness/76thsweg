@@ -1,0 +1,15 @@
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ci-manager
+stringData:
+  MONGO_URI: 'mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/harness?authSource=admin'
+  CIMANAGER_MONGO_URI: 'mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/harness-ci?authSource=admin'
+  PMS_MONGO_URI: 'mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/pms-harness?authSource=admin'
+  LOG_SERVICE_GLOBAL_TOKEN: c76e567a-b341-404d-a8dd-d9738714eb82
+  TI_SERVICE_GLOBAL_TOKEN: 78d16b66-4b4c-11eb-8377-acde48001122
+  TIMESCALE_URI: 'jdbc:postgresql://timescaledb-single-chart.harness:5432/harness'
+  TIMESCALE_PASSWORD: kXsMSRiREYXiMciUwMdj
+  TIMESCALEDB_USERNAME: postgres     
+type: Opaque

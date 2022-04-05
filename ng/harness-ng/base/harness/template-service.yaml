@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: template-service
+data:
+  CACHE_BACKEND: "REDIS"
+  CACHE_CONFIG_REDIS_SENTINELS: 'redis://redis-sentinel-harness-announce-0.harness:26379,redis://redis-sentinel-harness-announce-1.harness:26379,redis://redis-sentinel-harness-announce-2.harness:26379'
+  CACHE_CONFIG_SENTINEL_MASTER_NAME: "harness-redis"
+  CACHE_CONFIG_USE_SENTINEL: "true"
+  DEPLOY_MODE: KUBERNETES_ONPREM
+  LOGGING_LEVEL: 'INFO'
+  MEMORY: '512m'
+  MANAGER_TARGET: harness-manager:9879
+  MANAGER_AUTHORITY: default-authority.harness.io
+  NG_MANAGER_GITSYNC_TARGET: ng-manager:13002
+  NG_MANAGER_GITSYNC_AUTHORITY: default-authority.harness.io
+  SCM_SERVICE_URI: "scm:8091"
+  EVENTS_FRAMEWORK_REDIS_URL: 'redis://localhost:6379'
+  EVENTS_FRAMEWORK_USE_SENTINEL: "true"
+  EVENTS_FRAMEWORK_SENTINEL_MASTER_NAME: 'harness-redis'
+  EVENTS_FRAMEWORK_REDIS_SENTINELS: 'redis://redis-sentinel-harness-announce-0.harness:26379,redis://redis-sentinel-harness-announce-1.harness:26379,redis://redis-sentinel-harness-announce-2.harness:26379'
+  NG_MANAGER_BASE_URL: '35.202.24.14/ng/api/'
+  ENABLE_AUTH: "true"
+  ENABLE_GIT_SYNC: "true"
+  ENABLE_AUDIT: "true"
+  ACCESS_CONTROL_ENABLED: "true"
+  ENFORCEMENT_CHECK_ENABLED: "false"
+  ACCESS_CONTROL_BASE_URL: '35.202.24.14/authz/api/'
+  AUDIT_SERVICE_BASE_URL: '35.202.24.14/audit/api/'
+  PMS_GRPC_TARGET:  pipeline-service:12011
+  PMS_GRPC_AUTHORITY:  default-authority.harness.io

@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: le-nextgen
+data:
+  https_port: "10800"
+  learning_env: on_prem
+  server_url: http://cv-nextgen:6060
+
+---
+
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: le-nextgen
+stringData:
+  service_secret: 59MR5RlVARcdH7zb7pNx6GzqiglBmXR8
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: le-nextgen
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "le-nextgen_labels" | nindent 4 }}
+  annotations:
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "le-nextgen_deployment_annotations" | nindent 4 }}
+  name: le-nextgen
+spec:
+  replicas: repl{{ ConfigOption "le-nextgen_replica" }}
+  selector:
+    matchLabels:
+      app: le-nextgen
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: le-nextgen
+        kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "le-nextgen_labels" | nindent 8 }}
+      annotations:
+        kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "le-nextgen_podspec_annotations" | nindent 8 }}
+    spec:
+      # repl{{ if ConfigOptionEquals "mode" "production_ha"}}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: le-nextgen
+              topologyKey: kubernetes.io/hostname
+      # repl{{ end }}
+      containers:
+        - envFrom:
+            - configMapRef:
+                name: le-nextgen
+            - secretRef:
+                name: le-nextgen
+          image: harness/le-nextgen-signed:66300
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: true
+          name: le-nextgen
+          ports:
+            - containerPort: 8108
+              name: learning
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 'repl{{ ConfigOption "le-nexgen_cpu" }}'
+              memory: 'repl{{ ConfigOption "le-nexgen_memory" }}Mi'
+            requests:
+              cpu: 'repl{{ ConfigOption "le-nexgen_cpu" }}'
+              memory: 'repl{{ ConfigOption "le-nexgen_memory" }}Mi'
+      serviceAccountName: harness-default
+---

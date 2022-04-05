@@ -1,0 +1,28 @@
+apiVersion: kots.io/v1beta1
+kind: Application
+metadata:
+  name: harness-ng
+spec:
+  title: HarnessNG
+  icon: 'https://storage.googleapis.com/harness-ui-thirdparty/third-party/harness.svg'
+  requireMinimalRBACPrivileges: true
+  allowRollback: true
+  additionalImages:
+    - 'harness/ci-addon:release-97'
+    - 'harness/ci-lite-engine:release-34'
+    - 'harness/drone-git:1.0.6-rootless-linux-amd64'
+    - 'plugins/kaniko:1.3.1'
+    - 'plugins/kaniko-ecr:1.3.1'
+    - 'plugins/kaniko-gcr:1.3.1'
+    - 'plugins/gcs:1.2.4'
+    - 'plugins/s3:1.0.3'
+    - 'plugins/artifactory:1.0.4'
+    - 'plugins/cache:1.3.5'
+  statusInformers:
+    - deployment/ng-manager
+    - deployment/ci-manager
+    - deployment/pipeline-service
+    - service/next-gen-ui
+  releaseNotes: >-
+    GitHub Action release of refs/heads/Unstable triggered by gunascode:
+    [3007d9a](https://github.com/wings-software/harness-ng-replicated/commit/3007d9a738b53330c58f1dfec06c1d507ec550ac)

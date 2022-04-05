@@ -1,0 +1,176 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ti-service
+data:
+  TI_SERVICE_TIMESCALE_HOST: timescaledb-single-chart.{{repl Namespace}}
+  TI_SERVICE_TIMESCALE_PORT: "5432"
+  TI_SERVICE_DB_NAME: harnessti
+  TI_SERVICE_MONGODB_DB_NAME: ti-harness
+  TI_SERVICE_HYPER_TABLE: evaluation
+  TI_SERVICE_DISABLE_AUTH: "true"
+  TI_SERVICE_SELECTION_HYPER_TABLE: selection
+  TI_SERVICE_COVERAGE_HYPER_TABLE: coverage
+  TI_SERVICE_TIMESCALE_SSL_MODE: "require"
+  EVENTS_FRAMEWORK_REDIS_URL: default
+  EVENTS_FRAMEWORK_REDIS_USE_SENTINEL: 'true'
+  EVENTS_FRAMEWORK_REDIS_SENTINEL_MASTER_NAME: 'harness-redis'
+  EVENTS_FRAMEWORK_REDIS_SENTINEL_URLS: 'redis-sentinel-harness-announce-0.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-1.{{repl Namespace}}:26379,redis://redis-sentinel-harness-announce-2.{{repl Namespace}}:26379'
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ti-service
+stringData:
+  TSDB_URL: 'postgres://postgres:kXsMSRiREYXiMciUwMdj@timescaledb-single-chart.{{repl Namespace}}:5432'
+  TI_SERVICE_TIMESCALE_USERNAME: postgres
+  TI_SERVICE_TIMESCALE_PASSWORD: kXsMSRiREYXiMciUwMdj
+  TI_SERVICE_GLOBAL_TOKEN: 78d16b66-4b4c-11eb-8377-acde48001122
+  TI_SERVICE_MONGODB_CONN_STR: '{{repl if ConfigOptionEquals "mode" "production_ha"}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.{{repl Namespace}}.svc:27017/ti-harness?replicaSet=rs0&authSource=admin{{repl else}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc/ti-harness?authSource=admin{{repl end}}' 
+type: Opaque
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ti-service
+  labels:
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "labels" | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+  - name: ti-service
+    port: 8078
+    protocol: TCP
+    targetPort: 8078
+  selector:
+    app: ti-service
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ti-service
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    kubernetes.io/ingress.class: 'repl{{ ConfigOption "ingress_class_name" }}'
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "ingress_annotations" | nindent 4 }}
+spec:
+  rules:
+    - http:
+        paths:
+          - backend:
+              serviceName: ti-service
+              servicePort: 8078
+            path: /ti-service(/|$)(.*)
+# repl{{ if ConfigOptionEquals "scheme" "https"}}
+      host: '{{repl ConfigOption "host_name" }}'
+  tls:
+    - hosts:
+      - '{{repl ConfigOption "host_name" }}'
+      secretName: harness-cert  
+# repl{{ end }}             
+            
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ti-service
+  labels:
+    app: ti-service
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "labels" | nindent 4 }}
+  annotations:  
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "ti_deployment_annotations" | nindent 4 }}    
+spec:
+  progressDeadlineSeconds: 300
+  replicas: repl{{ ConfigOption "ti_service_replica" }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: ti-service
+  template:
+    metadata:
+      labels:
+        app: ti-service
+        kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "labels" | nindent 8 }}
+      annotations:
+        kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "ti_podspec_annotations" | nindent 8 }}        
+    spec:
+# repl{{ if ConfigOptionEquals "mode" "production_ha"}}      
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:	
+            - labelSelector:	
+                matchLabels:	
+                  app: ti-service
+              topologyKey: kubernetes.io/hostname
+# repl{{ end }}                
+      serviceAccountName: harness-default
+      terminationGracePeriodSeconds: 30
+      containers:
+      - envFrom:
+        - secretRef:
+            name: ti-service
+        - configMapRef:
+            name: ti-service
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: http-ti-service
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: http-ti-service
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        name: ti-service
+        image: harness/ti-service-signed:release-46
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 65534
+          runAsNonRoot: true
+        ports:
+        - name: http-ti-service
+          containerPort: 8078
+          protocol: "TCP"    
+        resources:
+          limits:
+            memory: 'repl{{ ConfigOption "ti_service_pod_memory" }}Mi'
+            cpu: 'repl{{ ConfigOption "ti_service_cpu" }}'
+          requests:
+            memory: 'repl{{ ConfigOption "ti_service_pod_memory" }}Mi'
+            cpu: 'repl{{ ConfigOption "ti_service_cpu" }}'
+---
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ti-migration-release-46
+  annotations:
+    "kots.io/hook-delete-policy": "hook-succeeded, hook-failed"
+spec:
+  template:
+    spec:
+      containers:
+      - name: migrate
+        image: harness/ti-service-signed:release-46
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash", "-c", "/opt/harness/migrate.sh" ]
+        envFrom:
+        - secretRef:
+            name: ti-service
+        resources:
+          limits:
+            memory: 3024Mi
+            cpu: 1
+          requests:
+            memory: 3024Mi
+            cpu: 1
+      restartPolicy: Never
+

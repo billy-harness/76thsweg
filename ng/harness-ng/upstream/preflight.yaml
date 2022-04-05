@@ -1,0 +1,78 @@
+apiVersion: troubleshoot.replicated.com/v1beta1
+kind: Preflight
+metadata:
+  name: harness
+spec:
+  collectors:
+    - data:
+       name: static/kots-version.txt
+       data: '{{repl KotsVersion }}'
+  analyzers:
+    - storageClass:    
+        checkName: Required storage classes
+        storageClassName: 'repl{{ ConfigOption "storage_class" }}'
+        outcomes:
+          - fail:
+              message: 'The storage class repl{{ ConfigOption "storage_class" }} was not found'
+          - pass:
+              message: 'Storage class repl{{ ConfigOption "storage_class" }} is valid'
+    - clusterVersion:
+        outcomes:
+          - fail:
+              when: "< 1.13.0"
+              message: The application requires Kubernetes 1.13.0 or later, and recommends 1.15.0.
+              uri: https://www.kubernetes.io
+          - warn:
+              when: "< 1.15.0"
+              message: Your cluster meets the minimum version of Kubernetes, but we recommend you update to 1.15.0 or later.
+              uri: https://kubernetes.io
+          - pass:
+              message: Your cluster meets the recommended and required versions of Kubernetes.
+    - textAnalyze:
+        checkName: Required Kots Version
+        fileName: static/kots-version.txt
+        regexGroups: '(?P<Major>\d+)\.(?P<Minor>\d+)\.(?P<Patch>\d+)'
+        outcomes:
+          - fail:
+              when: 'Minor < 64'
+              message: The application requires Kots 1.64.0 or later, Please upgrade Kots.
+              uri: '{{repl if (IsKurl) }}https://docs.harness.io/article/kgvg58wg1g-on-prem-embedded-cluster-setup#upgrade_embedded_kubernetes_cluster_and_kots_2{{repl else}}https://docs.harness.io/article/v6x4n5j9lv-kubernetes-on-prem-existing-cluster-setup#upgrade_kots_admin_tool_2{{repl end}}'
+          - pass:
+              message: Your cluster meets the recommended and required versions of Kots.      
+    - containerRuntime:
+        outcomes:
+          - pass:
+              when: "== docker"
+              message: Docker container runtime was found.
+          - fail:
+              message: Did not find Docker container runtime.
+    - distribution:
+        checkName: Check Kubernetes environment.
+        outcomes:
+          - fail:
+              when: "== docker-desktop"
+              message: The application does not support Docker Desktop Clusters
+          - fail:
+              when: "== microk8s"
+              message: The application does not support Microk8s Clusters
+          - fail:
+              when: "== minikube"
+              message: The application does not support Minikube Clusters
+          - pass:
+              when: "== eks"
+              message: EKS is a supported distribution
+          - pass:
+              when: "== gke"
+              message: GKE is a supported distribution
+          - pass:
+              when: "== aks"
+              message: AKS is a supported distribution
+          # Will be supported in the future
+          - pass:
+              when: "== kurl"
+              message: KURL is a supported distribution
+          - pass:
+              when: "== digitalocean"
+              message: DigitalOcean is a supported distribution
+          - warn:
+              message: Unable to determine the distribution of Kubernetes

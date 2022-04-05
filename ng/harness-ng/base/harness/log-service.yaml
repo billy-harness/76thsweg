@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: log-service  
+data:
+  LOG_SERVICE_S3_BUCKET: 'logs'
+  LOG_SERVICE_S3_REGION: 'us-east-1'
+  LOG_SERVICE_S3_ENDPOINT: 'http://http://35.202.24.14:9000'
+  LOG_SERVICE_S3_PATH_STYLE: "true"
+  LOG_SERVICE_DISABLE_AUTH: "true"

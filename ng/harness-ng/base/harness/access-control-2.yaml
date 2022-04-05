@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name:  access-control
+stringData:
+  MONGO_URI: 'mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/accesscontrol?authSource=admin' 
+  OFFSET_STORAGE_FILE_FILENAME: 'mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.harness.svc/accesscontrol?authSource=admin' 
+  MONGODB_PASSWORD: CA8FMywpbM
+  IDENTITY_SERVICE_SECRET: HVSKUYqD4e5Rxu12hFDdCJKGM64sxgEynvdDhaOHaTHhwwn0K4Ttr0uoOxSsEVYNrUU=

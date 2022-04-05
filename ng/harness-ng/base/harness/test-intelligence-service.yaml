@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ti-service
+data:
+  TI_SERVICE_TIMESCALE_HOST: timescaledb-single-chart.harness
+  TI_SERVICE_TIMESCALE_PORT: "5432"
+  TI_SERVICE_DB_NAME: harnessti
+  TI_SERVICE_MONGODB_DB_NAME: ti-harness
+  TI_SERVICE_HYPER_TABLE: evaluation
+  TI_SERVICE_DISABLE_AUTH: "true"
+  TI_SERVICE_SELECTION_HYPER_TABLE: selection
+  TI_SERVICE_COVERAGE_HYPER_TABLE: coverage
+  TI_SERVICE_TIMESCALE_SSL_MODE: "require"
+  EVENTS_FRAMEWORK_REDIS_URL: default
+  EVENTS_FRAMEWORK_REDIS_USE_SENTINEL: 'true'
+  EVENTS_FRAMEWORK_REDIS_SENTINEL_MASTER_NAME: 'harness-redis'
+  EVENTS_FRAMEWORK_REDIS_SENTINEL_URLS: 'redis-sentinel-harness-announce-0.harness:26379,redis://redis-sentinel-harness-announce-1.harness:26379,redis://redis-sentinel-harness-announce-2.harness:26379'

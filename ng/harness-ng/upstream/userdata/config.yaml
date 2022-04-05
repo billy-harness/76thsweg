@@ -1,0 +1,205 @@
+apiVersion: kots.io/v1beta1
+kind: ConfigValues
+metadata:
+  creationTimestamp: null
+  name: harness-ng
+spec:
+  values:
+    access_control_replica:
+      default: "1"
+    accesscontrol_service_config: {}
+    accesscontrol_service_cpu:
+      default: "0.5"
+    accesscontrol_service_pod_memory:
+      default: "512"
+    acs_deployment_annotations: {}
+    acs_podspec_annotations: {}
+    advanced_configuration:
+      default: "0"
+    agent_grpc_authority:
+      default: default-authority.harness.io
+    agent_grpc_target:
+      default: http://35.202.24.14:7909
+    app_log_level:
+      default: INFO
+    cdc_config: {}
+    cdc_cpu:
+      default: "0.5"
+    cdc_deployment_annotations: {}
+    cdc_memory:
+      default: "2048"
+    cdc_pod_memory:
+      default: "2880"
+    cdc_podspec_annotations: {}
+    cdc_replica:
+      default: "1"
+    ci_manager_config: {}
+    ci_manager_cpu:
+      default: "0.5"
+    ci_manager_deployment_annotations: {}
+    ci_manager_memory:
+      default: "1000"
+    ci_manager_pod_memory:
+      default: "1400"
+    ci_manager_podspec_annotations: {}
+    ci_manager_replica:
+      default: "1"
+    cv-nextgen_deployment_annotations: {}
+    cv-nextgen_labels: {}
+    cv-nextgen_memory:
+      default: "1024"
+    cv-nextgen_podspec_annotations: {}
+    cv-nextgen_replica:
+      default: "1"
+    cvnextgen_cpu:
+      default: "0.5"
+    cvnextgen_pod_memory:
+      default: "1400"
+    enable_gitops:
+      default: "0"
+    enable_gitops_rbac:
+      default: "0"
+    gitops_cpu:
+      default: "1"
+    gitops_pod_memory:
+      default: "256"
+    gitops_replicas:
+      default: "1"
+    gitops_service_deployment_annotations: {}
+    gitops_service_podspec_annotations: {}
+    host_name:
+      value: http://35.202.24.14
+    ingress_annotations: {}
+    ingress_class_name:
+      default: harness
+    ingress_config: {}
+    labels: {}
+    labels_config: {}
+    le-nexgen_config: {}
+    le-nexgen_cpu:
+      default: "0.5"
+    le-nexgen_memory:
+      default: "512"
+    le-nexgen_replica:
+      default: "1"
+    le-nextgen_deployment_annotations: {}
+    le-nextgen_labels: {}
+    le-nextgen_podspec_annotations: {}
+    loadbalancer_url:
+      value: 35.202.24.14
+    log_service_backend:
+      default: minio
+    log_service_config: {}
+    log_service_cpu:
+      default: "0.5"
+    log_service_deployment_annotations: {}
+    log_service_pod_memory:
+      default: "1400"
+    log_service_podspec_annotations: {}
+    log_service_replica:
+      default: "1"
+    log_storage_capacity:
+      default: "10"
+    minio_deployment_annotations: {}
+    minio_podspec_annotations: {}
+    mode:
+      default: production_ha
+      value: demo
+    ng_manager_config: {}
+    ng_manager_cpu:
+      default: "0.5"
+    ng_manager_deployment_annotations: {}
+    ng_manager_memory:
+      default: "4096"
+    ng_manager_pod_memory:
+      default: "6144"
+    ng_manager_podspec_annotations: {}
+    ng_manager_replica:
+      default: "1"
+    ng_ui_config: {}
+    ng_ui_cpu:
+      default: "0.2"
+    ng_ui_deployment_annotations: {}
+    ng_ui_memory:
+      default: "200"
+    ng_ui_podspec_annotations: {}
+    ng_ui_replica:
+      default: "1"
+    platform_service_config: {}
+    platform_service_cpu:
+      default: "0.5"
+    platform_service_deployment_annotations: {}
+    platform_service_pod_memory:
+      default: "512"
+    platform_service_podspec_annotations: {}
+    platform_service_replica:
+      default: "1"
+    pms_config: {}
+    pms_cpu:
+      default: "0.5"
+    pms_deployment_annotations: {}
+    pms_memory:
+      default: "1024"
+    pms_pod_memory:
+      default: "1400"
+    pms_podspec_annotations: {}
+    pms_replica:
+      default: "1"
+    s3_access_key:
+      default: minio
+      value: Plx4JZ9R/53gYiLKCNMSnQ==
+    s3_bucket_name:
+      default: logs
+    s3_endpoint:
+      default: http://http://35.202.24.14:9000
+    s3_region:
+      default: us-east-1
+    s3_secret_key:
+      default: minio123
+      value: Plx4JZ9R/53gYiLKCNMSnQ==
+    scheme:
+      default: https
+      value: http
+    scm_config: {}
+    scm_cpu:
+      default: "0.1"
+    scm_deployment_annotations: {}
+    scm_pod_memory:
+      default: "512"
+    scm_podspec_annotations: {}
+    scm_replica:
+      default: "1"
+    slack_webhook_url: {}
+    smtp_host: {}
+    smtp_password:
+      value: Plx4JZ9R/53gYiLKCNMSnQ==
+    smtp_port:
+      default: "465"
+    smtp_ssl:
+      default: "true"
+    smtp_username: {}
+    storage_class:
+      value: standard
+    template_config: {}
+    template_cpu:
+      default: "0.5"
+    template_deployment_annotations: {}
+    template_memory:
+      default: "512"
+    template_pod_memory:
+      default: "750"
+    template_podspec_annotations: {}
+    template_replica:
+      default: "1"
+    ti_config: {}
+    ti_deployment_annotations: {}
+    ti_podspec_annotations: {}
+    ti_service_cpu:
+      default: "0.5"
+    ti_service_pod_memory:
+      default: "1400"
+    ti_service_replica:
+      default: "1"
+    webhook_base_url:
+      default: 35.202.24.14
+status: {}

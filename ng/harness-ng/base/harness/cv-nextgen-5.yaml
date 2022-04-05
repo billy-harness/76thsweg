@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cv-nextgen
+  labels:
+    app: cv-nextgen
+    kots.io/placeholder: 'true'
+    
+  annotations:
+    kots.io/placeholder: 'true'
+    
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cv-nextgen
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: cv-nextgen
+        kots.io/placeholder: 'true'
+        
+      annotations:
+        kots.io/placeholder: 'true'
+        
+        license-features-hash: 'abc43bfad2c3c7274b66e21b998f581bf20ac8979a3705db18b8afec24d5f109'
+    spec:
+# 
+      serviceAccountName: harness-default
+      containers:
+      - name: cv-nextgen
+        image: harness/cv-nextgen:74410
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65534
+        envFrom:
+          - configMapRef:
+              name: cv-nextgen
+          - secretRef:
+              name: cv-nextgen
+        resources:
+          limits:
+            memory: '1400Mi'
+            cpu: '0.5'
+          requests:
+            memory: '1400Mi'
+            cpu: '0.5'
+        readinessProbe:
+          httpGet:
+            path: /cv/api/health
+            port: cv
+          initialDelaySeconds: 60
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /cv/api/health
+            port: cv
+          initialDelaySeconds: 300
+          periodSeconds: 10
+          failureThreshold: 2
+        ports:
+          - name: cv
+            containerPort: 6060
+            protocol: "TCP"
+          - name: cv-ng-grpc
+            containerPort: 9979
+            protocol: "TCP"

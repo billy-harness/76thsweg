@@ -1,0 +1,70 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: next-gen-ui
+  labels:
+    app: next-gen-ui
+    kots.io/placeholder: 'true'
+    
+  annotations:  
+    kots.io/placeholder: 'true'
+        
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: next-gen-ui
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate    
+  template:
+    metadata:
+      labels:
+        app: next-gen-ui
+        kots.io/placeholder: 'true'
+        
+      annotations:
+        license-features-hash: 'abc43bfad2c3c7274b66e21b998f581bf20ac8979a3705db18b8afec24d5f109'
+        kots.io/placeholder: 'true'
+                 
+    spec:
+#                 
+      serviceAccountName: harness-default               
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: next-gen-ui
+        image: harness/nextgenui-signed:0.292.8
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 101
+          runAsNonRoot: true 
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: ng-ui-port
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: ng-ui-port
+          initialDelaySeconds: 100
+          periodSeconds: 20
+          failureThreshold: 2
+        ports:
+        - name: ng-ui-port
+          containerPort: 8080
+          protocol: "TCP"
+        resources:
+          limits:
+            memory: '200Mi'
+            cpu: '0.2'
+          requests:
+            memory: '200Mi'
+            cpu: '0.2'
+        envFrom:
+        - configMapRef:
+            name: next-gen-ui

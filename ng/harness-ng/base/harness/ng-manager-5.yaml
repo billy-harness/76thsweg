@@ -1,0 +1,82 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ng-manager
+  labels:
+    app: ng-manager
+    kots.io/placeholder: 'true'
+    
+  annotations:  
+    kots.io/placeholder: 'true'
+        
+spec:
+  progressDeadlineSeconds: 800
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ng-manager
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: ng-manager
+        kots.io/placeholder: 'true'
+        
+      annotations:
+        license-features-hash: 'abc43bfad2c3c7274b66e21b998f581bf20ac8979a3705db18b8afec24d5f109'
+        kots.io/placeholder: 'true'
+        
+    spec:
+#                 
+      serviceAccountName: harness-default    
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: ng-manager
+        image: harness/ng-manager-signed:74410
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 65534
+          runAsNonRoot: true        
+        ports:
+        - name: http-ng-manager
+          containerPort: 7090
+          protocol: "TCP"
+        - name: ng-manager-grpc
+          containerPort: 9979
+          protocol: "TCP"
+        - name: git-sync-grpc
+          containerPort: 13002
+          protocol: "TCP"          
+        resources:
+          limits:
+            memory: '6144Mi'
+            cpu: '0.5'
+          requests:
+            memory: '6144Mi'
+            cpu: '0.5'
+        envFrom:
+        - configMapRef:
+            name: ng-manager
+        - secretRef:
+            name: ng-manager
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 7090
+          initialDelaySeconds: 180
+          timeoutSeconds: 10
+          periodSeconds: 10
+          failureThreshold: 20
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 7090
+          initialDelaySeconds: 180
+          timeoutSeconds: 10
+          periodSeconds: 10
+          failureThreshold: 10

@@ -1,0 +1,99 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: change-data-capture
+data:
+  DEPLOY_MODE: KUBERNETES
+  MEMORY: 'repl{{ ConfigOption "cdc_memory" }}'
+  MONGO_TAG_NAME: none
+  MONGO_TAG_VALUE: none
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: change-data-capture
+stringData:
+  MONGO_URI: '{{repl if ConfigOptionEquals "mode" "production_ha"}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.{{repl Namespace}}.svc:27017/harness?replicaSet=rs0&authSource=admin{{repl else}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc/harness?authSource=admin{{repl end}}'
+  EVENTS_MONGO_URI: '{{repl if ConfigOptionEquals "mode" "production_ha"}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.{{repl Namespace}}.svc:27017/events?replicaSet=rs0&authSource=admin{{repl else}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc/events?authSource=admin{{repl end}}'
+  PMS_MONGO_URI: '{{repl if ConfigOptionEquals "mode" "production_ha"}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.{{repl Namespace}}.svc:27017/pms-harness?replicaSet=rs0&authSource=admin{{repl else}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc/pms-harness?authSource=admin{{repl end}}'
+  CDC_MONGO_URI: '{{repl if ConfigOptionEquals "mode" "production_ha"}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.{{repl Namespace}}.svc:27017/change-data-capture?replicaSet=rs0&authSource=admin{{repl else}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc/change-data-capture?authSource=admin{{repl end}}'
+  NG_HARNESS_MONGO_URI: '{{repl if ConfigOptionEquals "mode" "production_ha"}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-1.mongodb-replicaset-chart.{{repl Namespace}}.svc,mongodb-replicaset-chart-2.mongodb-replicaset-chart.{{repl Namespace}}.svc:27017/ng-harness?replicaSet=rs0&authSource=admin{{repl else}}mongodb://admin:CA8FMywpbM@mongodb-replicaset-chart-0.mongodb-replicaset-chart.{{repl Namespace}}.svc/ng-harness?authSource=admin{{repl end}}'
+  TIMESCALEDB_URI: 'jdbc:postgresql://timescaledb-single-chart.{{repl Namespace}}:5432/harness'
+  TIMESCALEDB_PASSWORD: kXsMSRiREYXiMciUwMdj
+  TIMESCALEDB_USERNAME: postgres
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: change-data-capture
+  labels:
+    app: change-data-capture
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "labels" | nindent 4 }}
+  annotations:  
+    kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "cdc_deployment_annotations" | nindent 4 }}    
+spec:
+  replicas: repl{{ ConfigOption "cdc_replica" }}
+  selector:
+    matchLabels:
+      app: change-data-capture
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: change-data-capture
+        kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "labels" | nindent 8 }}
+      annotations:
+        kots.io/placeholder: repl{{ printf "'true'" }}repl{{ ConfigOption "cdc_podspec_annotations" | nindent 8 }}        
+    spec:
+# repl{{ if ConfigOptionEquals "mode" "production_ha"}}      
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:	
+            - labelSelector:	
+                matchLabels:	
+                  app: change-data-capture
+              topologyKey: kubernetes.io/hostname
+# repl{{ end }}
+      serviceAccountName: harness-default      
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: change-data-capture
+        image: harness/cdcdata-signed:74410
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 65534
+          runAsNonRoot: true        
+        envFrom:
+        - configMapRef:
+            name: change-data-capture
+        - secretRef:
+            name: change-data-capture
+        resources:
+          limits:
+            memory: 'repl{{ ConfigOption "cdc_pod_memory" }}Mi'
+            cpu: 'repl{{ ConfigOption "cdc_cpu" }}'
+          requests:
+            memory: 'repl{{ ConfigOption "cdc_pod_memory" }}Mi'
+            cpu: 'repl{{ ConfigOption "cdc_cpu" }}'
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8190
+          initialDelaySeconds: 300
+          timeoutSeconds: 10
+          periodSeconds: 10
+          failureThreshold: 20
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8190
+          initialDelaySeconds: 400
+          timeoutSeconds: 10
+          periodSeconds: 10
+          failureThreshold: 10
+

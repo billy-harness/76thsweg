@@ -1,0 +1,57 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: le-nextgen
+    kots.io/placeholder: 'true'
+    
+  annotations:
+    kots.io/placeholder: 'true'
+    
+  name: le-nextgen
+spec:
+  replicas: 
+  selector:
+    matchLabels:
+      app: le-nextgen
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: le-nextgen
+        kots.io/placeholder: 'true'
+        
+      annotations:
+        kots.io/placeholder: 'true'
+        
+    spec:
+      # 
+      containers:
+        - envFrom:
+            - configMapRef:
+                name: le-nextgen
+            - secretRef:
+                name: le-nextgen
+          image: harness/le-nextgen-signed:66300
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: true
+          name: le-nextgen
+          ports:
+            - containerPort: 8108
+              name: learning
+              protocol: TCP
+          resources:
+            limits:
+              cpu: '0.5'
+              memory: '512Mi'
+            requests:
+              cpu: '0.5'
+              memory: '512Mi'
+      serviceAccountName: harness-default
+---

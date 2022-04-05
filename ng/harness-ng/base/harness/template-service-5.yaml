@@ -1,0 +1,81 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: template-service
+  labels:
+    app: template-service
+    kots.io/placeholder: 'true'
+    
+  annotations:
+    kots.io/placeholder: 'true'
+    
+spec:
+  progressDeadlineSeconds: 300
+  replicas: 1
+  selector:
+    matchLabels:
+      app: template-service
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: template-service
+        kots.io/placeholder: 'true'
+        
+      annotations:
+        kots.io/placeholder: 'true'
+        
+    spec:
+# 
+      serviceAccountName: harness-default
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: template-service
+          image: harness/template-service-signed:74410
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+          ports:
+            - name: template-grpc
+              containerPort: 15011
+              protocol: "TCP"
+            - name: template-http
+              containerPort: 15001
+              protocol: "TCP"
+            - name: gitsync-grpc
+              containerPort: 16002
+              protocol: "TCP"
+          resources:
+            limits:
+              memory: '750Mi'
+              cpu: '0.5'
+            requests:
+              memory: '750Mi'
+              cpu: '0.5'
+          envFrom:
+            - configMapRef:
+                name: template-service
+            - secretRef:
+                name: template-service
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 15001
+            initialDelaySeconds: 60
+            timeoutSeconds: 5
+            periodSeconds: 5
+            failureThreshold: 8
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 15001
+            initialDelaySeconds: 40
+            timeoutSeconds: 5
+            periodSeconds: 10
+            failureThreshold: 20

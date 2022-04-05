@@ -1,0 +1,743 @@
+apiVersion: kots.io/v1beta1
+kind: Config
+metadata:
+  name: harness-ng-config
+spec:
+  groups:
+    - name: basic-configuration
+      title: Basic Configuration
+      description: Harness NG related configurations
+      items:  
+        - name: mode
+          title: Mode
+          default: production_ha
+          type: select_one
+          items:
+          - name: demo
+            title: Demo (Reduced resources cannot be upgraded to Production HA mode)
+          - name: production_single
+            title: Production - Single node (Can be converted to HA and extensible to 3+ nodes)
+          - name: production_ha
+            title: Production - High Availability (3+ nodes)        
+        - name: storage_class
+          title: Storage Class
+          help_text: Storage Class to be used for Persistent Volumes
+          when: '{{repl if (IsKurl) }}false{{repl else}}true{{repl end}}'
+          type: text
+          default: "{{repl if (IsKurl) }}default{{repl end}}"
+          required: true  
+        - name: loadbalancer_url
+          title: Application URL
+          help_text: URL to access Harness Application
+          type: text
+          required: true
+        - name: scheme
+          type: select_one
+          title: Scheme
+          help_text: Application Url Scheme
+          default: https
+          items:
+            - name: http
+              title: http
+            - name: https
+              title: https
+        - name: host_name
+          title: Host Name
+          help_text: Host Name to be used
+          type: text
+          required: true          
+    - name: advanced-configuration
+      title: Advanced Configuration
+      description: Advanced configurations for each component
+      items:           
+        - name: advanced_configuration
+          title: Advanced Configurations
+          help_text: Check the box to provide advanced configuraions
+          type: bool
+          default: "0"
+        - name: app_log_level
+          type: select_one   
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Log level for the Harness Application
+          help_text: Please choose one of the log levels
+          default: INFO          
+          items:
+            - name: DEBUG
+              title: DEBUG             
+            - name: INFO
+              title: INFO
+            - name: WARN
+              title: WARN
+            - name: ERROR
+              title: ERROR            
+        - name: ng_manager_config
+          type: heading
+          title: NG Manager Configurations
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'  
+        - name: ng_manager_replica
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: NG Manager Replicas
+          help_text: Number of replicas for NG Manager
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "production_ha"}}2{{repl else}}1{{repl end}}'
+        - name: ng_manager_cpu
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: NG Manager CPU
+          help_text: Number of CPU for NG Manager
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "demo"}}0.5{{repl else}}2{{repl end}}'
+        - name: ng_manager_memory
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: NG Manager Memory (Mi)
+          help_text: Memory for Manager jvm
+          type: text
+          default: "4096"
+        - name: ng_manager_pod_memory
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: NG Manager Pod Memory (Mi)
+          help_text: Memory for Manager pod
+          type: text
+          default: "6144"
+        - name: ng_manager_deployment_annotations
+          type: textarea
+          title: NG Manager Deployment Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to NG manager deployment
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'
+        - name: ng_manager_podspec_annotations
+          type: textarea
+          title: NG Manager Pod Spec Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to NG manager pod spec
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}' 
+        - name: webhook_base_url
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Application base url for Git Sync
+          help_text: Specify the base url of the application or the proxy url where git will send the webhook events
+          type: text
+          default: repl{{ ConfigOption "loadbalancer_url" }} 
+        - name: pms_config
+          type: heading
+          title: Pipeline Management Services Configurations
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'   
+        - name: pms_replica
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Pipeline Management Service Replicas
+          help_text: Number of replicas for Pipeline Management Service
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "production_ha"}}2{{repl else}}1{{repl end}}'
+        - name: pms_cpu
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Pipeline Management Service CPU
+          help_text: Number of CPU for Pipeline Management Service
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "demo"}}0.5{{repl else}}1{{repl end}}'
+        - name: pms_memory
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Pipeline Management Service Memory (Mi)
+          help_text: Memory for Pipeline Management Service 
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "demo"}}1024{{repl else}}4096{{repl end}}'       
+        - name: pms_pod_memory
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Pipeline Management Service Pod Memory (Mi)
+          help_text: Memory for Pipeline Management Service pod
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "demo"}}1400{{repl else}}6144{{repl end}}'
+        - name: pms_deployment_annotations
+          type: textarea
+          title: Pipeline Management Service Deployment Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to Pipeline Management Service deployment
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'
+        - name: pms_podspec_annotations
+          type: textarea
+          title: Pipeline Management Service Pod Spec Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to Pipeline Management Service pod spec
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'
+        - name: template_config
+          type: heading
+          title: Template Management Services Configurations
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+        - name: template_replica
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Template Management Service Replicas
+          help_text: Number of replicas for Template Management Service
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "production_ha"}}2{{repl else}}1{{repl end}}'
+        - name: template_cpu
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Template Management Service CPU
+          help_text: Number of CPU for Template Management Service
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "demo"}}0.5{{repl else}}0.5{{repl end}}'
+        - name: template_memory
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Template Management Service Memory (Mi)
+          help_text: Memory for Template Management Service
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "demo"}}512{{repl else}}1024{{repl end}}'
+        - name: template_pod_memory
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Template Management Service Pod Memory (Mi)
+          help_text: Memory for Template Management Service pod
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "demo"}}750{{repl else}}1400{{repl end}}'
+        - name: template_deployment_annotations
+          type: textarea
+          title: Template Management Service Deployment Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to Template Management Service deployment
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'
+        - name: template_podspec_annotations
+          type: textarea
+          title: Template Management Service Pod Spec Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to Template Management Service pod spec
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'
+        - name: ng_ui_config
+          type: heading
+          title: Nextgen UI Configurations
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'           
+        - name: ng_ui_replica
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Nextgen UI Replicas
+          help_text: Number of replicas for NextGen UI
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "production_ha"}}2{{repl else}}1{{repl end}}'
+        - name: ng_ui_deployment_annotations
+          type: textarea
+          title:  NG UI  Deployment Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to NG UI deployment
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'
+        - name: ng_ui_cpu
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: NG UI CPU
+          help_text: Number of CPU for NG UI
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "production_ha"}}0.5{{repl else}}0.2{{repl end}}'
+        - name: ng_ui_memory
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: NG UI Memory (Mi)
+          help_text: Memory for NG UI
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "production_ha"}}512{{repl else}}200{{repl end}}'           
+        - name: ng_ui_podspec_annotations
+          type: textarea
+          title:  NG UI  Pod Spec Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to  NG UI  pod spec
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'          
+        - name: ci_manager_config
+          type: heading
+          title: CI Manager Configurations
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'           
+        - name: ci_manager_replica
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: CI Manager Replicas
+          help_text: Number of replicas for CI Manager
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "production_ha"}}2{{repl else}}1{{repl end}}'
+        - name: ci_manager_cpu
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: CI Manager CPU
+          help_text: Number of CPU for CI Manager
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "demo"}}0.5{{repl else}}1{{repl end}}'
+        - name: ci_manager_memory
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: CI Manager Memory (Mi)
+          help_text: Memory for CI Manager jvm
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "demo"}}1000{{repl else}}2096{{repl end}}'          
+        - name: ci_manager_pod_memory
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: CI Manager Pod Memory (Mi)
+          help_text: Memory for CI Manager pod
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "demo"}}1400{{repl else}}3072{{repl end}}'
+        - name: ci_manager_deployment_annotations
+          type: textarea
+          title: CI Manager Deployment Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to CI manager deployment
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'
+        - name: ci_manager_podspec_annotations
+          type: textarea
+          title: CI Manager Pod Spec Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to CI manager pod spec
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'           
+        - name: ti_config
+          type: heading
+          title: Test Intelligence Service Configurations
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'           
+        - name: ti_service_replica
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Test Intelligence Service Replicas
+          help_text: Number of replicas for Test Intelligence Service
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "production_ha"}}2{{repl else}}1{{repl end}}'
+        - name: ti_service_cpu
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Test Intelligence Service CPU
+          help_text: Number of CPU for Test Intelligence Service
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "demo"}}0.5{{repl else}}1{{repl end}}'
+        - name: ti_service_pod_memory
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Test Intelligence Service Pod Memory (Mi)
+          help_text: Memory for Test Intelligence Service pod
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "demo"}}1400{{repl else}}3072{{repl end}}'
+        - name: ti_deployment_annotations
+          type: textarea
+          title: Test Intelligence Service Deployment Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to Test Intelligence Service deployment
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'
+        - name: ti_podspec_annotations
+          type: textarea
+          title: Test Intelligence Service Pod Spec Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to Test Intelligence Service pod spec
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'          
+        - name: scm_config
+          type: heading
+          title: SCM service Configurations
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'            
+        - name: scm_replica
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: SCM service Replicas
+          help_text: Number of replicas for SCM service
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "production_ha"}}1{{repl else}}1{{repl end}}'
+        - name: scm_cpu
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: SCM service CPU
+          help_text: Number of CPU for SCM service
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "demo"}}0.1{{repl else}}0.1{{repl end}}'
+        - name: scm_pod_memory
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: SCM service Pod Memory (Mi)
+          help_text: Memory for SCM service pod
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "demo"}}512{{repl else}}512{{repl end}}'
+        - name: scm_deployment_annotations
+          type: textarea
+          title: SCM Deployment Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to SCM deployment
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'
+        - name: scm_podspec_annotations
+          type: textarea
+          title: SCM Pod Spec Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to SCM pod spec
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'          
+        - name: cdc_config
+          type: heading
+          title: Change Data Capture Service Configurations
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'  
+        - name: cdc_replica
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Change Data Capture Service Replicas
+          help_text: Number of replicas for Change Data Capture Service
+          type: text
+          default: "1"
+        - name: cdc_cpu
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Change Data Capture Service CPU
+          help_text: Number of CPU for Change Data Capture Service
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "demo"}}0.5{{repl else}}1{{repl end}}'
+        - name: cdc_memory
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Change Data Capture Service Memory (Mi)
+          help_text: Memory for Change Data Capture Service jvm
+          type: text
+          default: "2048"
+        - name: cdc_pod_memory
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Change Data Capture Service Pod Memory (Mi)
+          help_text: Memory for Change Data Capture Service pod
+          type: text
+          default: "2880"
+        - name: cdc_deployment_annotations
+          type: textarea
+          title: Change Data Capture Servicer Deployment Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to Change Data Capture Service deployment
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'
+        - name: cdc_podspec_annotations
+          type: textarea
+          title: Change Data Capture Service Pod Spec Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to Change Data Capture Service pod spec
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'                            
+        - name: platform_service_config
+          type: heading
+          title: Platform Service Configurations
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'            
+        - name: platform_service_replica
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Platform Service Replicas
+          help_text: Number of replicas for Platform Service
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "production_ha"}}2{{repl else}}1{{repl end}}'
+        - name: platform_service_cpu
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Platform service CPU
+          help_text: Number of CPU for Platform service
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "production_ha"}}1{{repl else}}0.5{{repl end}}'
+        - name: platform_service_pod_memory
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Platform service Pod Memory (Mi)
+          help_text: Memory for Platform service pod
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "production_ha"}}3072{{repl else}}512{{repl end}}'
+        - name: platform_service_deployment_annotations
+          type: textarea
+          title: Platform Service Deployment Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to Platform Service deployment
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'
+        - name: platform_service_podspec_annotations
+          type: textarea
+          title: Platform Service Pod Spec Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to Platform Service pod spec
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'          
+        - name: smtp_host
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: SMTP Host
+          help_text: SMTP Host
+          type: text
+        - name: smtp_port
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: SMTP Port
+          help_text: SMTP Port
+          type: text
+          default: '465'     
+        - name: smtp_username
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: SMTP Username
+          help_text: SMTP Username
+          type: text
+        - name: smtp_password
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: SMTP Password
+          help_text: SMTP Password
+          type: password
+        - name: smtp_ssl
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          type: select_one
+          title: SMTP Use SSL
+          help_text: Set to true if SMTP is over SSL
+          default: 'true'
+          items:
+            - name: 'true'
+              title: 'true'
+            - name: 'false'
+              title: 'false'         
+        - name: accesscontrol_service_config
+          type: heading
+          title: Access Control Service Configurations
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'            
+        - name: access_control_replica
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Access Control Service Replicas
+          help_text: Number of replicas for Access Control Service
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "production_ha"}}2{{repl else}}1{{repl end}}'
+        - name: accesscontrol_service_cpu
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Access Control service CPU
+          help_text: Number of CPU for PlatfoAccess Controlrm service
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "production_ha"}}1{{repl else}}0.5{{repl end}}'
+        - name: accesscontrol_service_pod_memory
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Access Control service Pod Memory (Mi)
+          help_text: Memory for Access Control service pod
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "production_ha"}}3072{{repl else}}512{{repl end}}'
+        - name: acs_deployment_annotations
+          type: textarea
+          title: Access Control service Deployment Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to Access Control service deployment
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'
+        - name: acs_podspec_annotations
+          type: textarea
+          title: Access Control service Pod Spec Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to Access Control service pod spec
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'          
+        - name: slack_webhook_url
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Slack Webhook Url
+          help_text: Slack Webhook Url to send notifications
+          type: text                                                                   
+        - name: log_service_config
+          type: heading
+          title: Log service Configurations
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'           
+        - name: log_service_replica
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Log service Replicas
+          help_text: Number of replicas for Log service
+          type: text
+          hidden: true
+          default: '{{repl if ConfigOptionEquals "mode" "production_ha"}}1{{repl else}}1{{repl end}}'
+        - name: log_service_cpu
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Log service CPU
+          help_text: Number of CPU for Log service
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "demo"}}0.5{{repl else}}1{{repl end}}'
+        - name: log_service_pod_memory
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Log service Pod Memory (Mi)
+          help_text: Memory for Log service pod
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "demo"}}1400{{repl else}}3072{{repl end}}'
+        - name: log_service_deployment_annotations
+          type: textarea
+          title: Log service Deployment Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to Log service deployment
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'
+        - name: log_service_podspec_annotations
+          type: textarea
+          title: Log service Pod Spec Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to Log service pod spec
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'          
+        - name: log_service_backend
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          type: select_one
+          title: Log Service Backend to be used to store pipeline execution logs (build logs)
+          help_text: Use in built minio or provide configurations for S3 compatible bucket
+          default: minio
+          items:
+            - name: minio
+              title: Minio
+            - name: s3_bucket
+              title: S3 Bucket
+        - name: s3_endpoint
+          when: '{{repl and (ConfigOptionEquals "advanced_configuration" "1") (ConfigOptionEquals "log_service_backend" "s3_bucket")}}'
+          title: S3 Enpoint
+          help_text: Url for s3 bucket
+          type: text
+          default: '{{repl if ConfigOptionEquals "log_service_backend" "minio"}}repl{{ ConfigOption "scheme" }}://{{repl ConfigOption "host_name" }}:9000{{repl else}}N/A{{repl end}}'
+        - name: s3_region
+          when: '{{repl and (ConfigOptionEquals "advanced_configuration" "1") (ConfigOptionEquals "log_service_backend" "s3_bucket")}}'
+          title: S3 Region
+          help_text: Region for s3 bucket
+          type: text
+          default: '{{repl if ConfigOptionEquals "log_service_backend" "minio"}}us-east-1{{repl else}}N/A{{repl end}}' 
+        - name: s3_bucket_name
+          when: '{{repl and (ConfigOptionEquals "advanced_configuration" "1") (ConfigOptionEquals "log_service_backend" "s3_bucket")}}'
+          title: S3 Bucket Name
+          help_text: Name of the s3 bucket
+          type: text
+          default: '{{repl if ConfigOptionEquals "log_service_backend" "minio"}}logs{{repl else}}N/A{{repl end}}'
+        - name: s3_access_key
+          when: '{{repl and (ConfigOptionEquals "advanced_configuration" "1") (ConfigOptionEquals "log_service_backend" "s3_bucket")}}'
+          title: S3 Access Key
+          help_text: Access key for s3 bucket
+          type: password
+          default: '{{repl if ConfigOptionEquals "log_service_backend" "minio"}}minio{{repl else}}N/A{{repl end}}'
+        - name: s3_secret_key
+          when: '{{repl and (ConfigOptionEquals "advanced_configuration" "1") (ConfigOptionEquals "log_service_backend" "s3_bucket")}}'
+          title: S3 Secret Key
+          help_text: Secret key for s3 bucket
+          type: password
+          default: '{{repl if ConfigOptionEquals "log_service_backend" "minio"}}minio123{{repl else}}N/A{{repl end}}'
+        - name: minio_deployment_annotations
+          type: textarea
+          title: Minio Deployment Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to Minio deployment
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl and (ConfigOptionEquals "advanced_configuration" "1") (ConfigOptionEquals "log_service_backend" "minio")}}{{repl end}}'
+        - name: minio_podspec_annotations
+          type: textarea
+          title: Minio Pod Spec Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to Minio pod spec
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl and (ConfigOptionEquals "advanced_configuration" "1") (ConfigOptionEquals "log_service_backend" "minio")}}{{repl end}}'                                                               
+        - name: labels_config
+          type: heading
+          title: Kubernetes object Labels
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'         
+        - name: labels
+          type: textarea
+          title: Labels
+          help_text: |
+            Use this textarea to provide labels. These labels will be added to all Deployments, Statefulsets etc., at `metadata.labels` and `spec.template.metadata.labels`
+            For example, add `environment: production` 
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'
+        - name: ingress_config
+          type: heading
+          title: Ingress Configurations
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'                     
+        - name: ingress_class_name
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}' 
+          title: Ingress Class Name
+          help_text: Name of the ingress class
+          type: text
+          default: "harness"            
+        - name: ingress_annotations
+          type: textarea
+          title: Ingress Rule Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to ingress rules.
+            For example, add `nginx.ingress.kubernetes.io/ssl-redirect: "true"` if ingress should redirect to https.
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'    
+        - name: log_storage_capacity
+          title: Log Storage capacity  
+          type: text
+          hidden: true
+          default:  '{{repl if ConfigOptionEquals "mode" "demo"}}10{{repl else}}200{{repl end}}'
+        - name: enable_gitops
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          type: bool
+          default: "0"
+          title: Install GitOps Service
+          help_text: Check the box if GitOps Service is to be installed
+        - name: agent_grpc_target
+          type: text
+          help_text: Provide only if your Load balancer cannot process http2 traffic over 443 and needs a separate Load Balancer or port
+          when: '{{repl and (ConfigOptionEquals "scheme" "https") (ConfigOptionEquals "enable_gitops" "1")}}'
+          title: Agent GRPC Target
+          default: '{{repl if ConfigOptionEquals "scheme" "https"}}repl{{ ConfigOption "host_name"}}:443{{repl else}}repl{{ ConfigOption "host_name"}}:7909{{repl end}}'
+        - name: agent_grpc_authority
+          type: text
+          help_text: Provide host name of the GRPC Load Balancer if GRPC target is different from default value
+          when: '{{repl and (ConfigOptionEquals "enable_gitops" "1") (ConfigOptionEquals "scheme" "https")}}'
+          title: Agent GRPC Authority
+          default: '{{repl if ConfigOptionEquals "scheme" "https"}}gitops-grpc-repl{{ ConfigOption "host_name"}}{{repl else}}default-authority.harness.io{{repl end}}'
+        - name: gitops_replicas
+          when: '{{repl and (ConfigOptionEquals "enable_gitops" "1") (ConfigOptionEquals "advanced_configuration" "1") }}'
+          title: GitOps Service Replicas
+          help_text: Number of replicas for GitOps Service
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "production_ha"}}2{{repl else}}1{{repl end}}'
+        - name: gitops_cpu
+          when: '{{repl and (ConfigOptionEquals "enable_gitops" "1") (ConfigOptionEquals "advanced_configuration" "1")}}'
+          title: GitOps Service CPU
+          help_text: Number of CPU for GitOps Service
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "demo"}}1{{repl else}}2{{repl end}}'
+        - name: gitops_pod_memory
+          when: '{{repl and (ConfigOptionEquals "enable_gitops" "1") (ConfigOptionEquals "advanced_configuration" "1")}}'
+          title: GitOps Service Memory (Mi)
+          help_text: Memory for GitOps Service
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "demo"}}256{{repl else}}512{{repl end}}'          
+        - name: enable_gitops_rbac
+          when: '{{repl and (ConfigOptionEquals "advanced_configuration" "1") (ConfigOptionEquals "enable_gitops" "1")}}'
+          type: bool 
+          title: Enable RBAC for GitOps
+          help_text: Check if if GitOps RBAC is to be enabled
+          default: "0"
+        - name: gitops_service_deployment_annotations
+          type: textarea
+          title: GitOps Service Deployment Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to GitOps deployment
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl and (ConfigOptionEquals "advanced_configuration" "1") (ConfigOptionEquals "enable_gitops" "1") }}{{repl end}}'
+        - name: gitops_service_podspec_annotations
+          type: textarea
+          title: GitOps Service Pod Spec Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to GitOps Service pod spec
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl and (ConfigOptionEquals "advanced_configuration" "1") (ConfigOptionEquals "enable_gitops" "1")}}{{repl end}}' 
+        - name: cv-nextgen_replica
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Verification Service Replicas
+          help_text: Number of replicas for Verification service
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "production_ha"}}2{{repl else}}1{{repl end}}'
+        - name: cvnextgen_cpu
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Verification Service CPU
+          help_text: Number of CPU for Verification Service
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "demo"}}0.5{{repl else}}1{{repl end}}'
+        - name: cv-nextgen_memory
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Verification Service Memory (Mi)
+          help_text: Memory for Verification Service jvm
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "demo"}}1024{{repl else}}2048{{repl end}}'
+        - name: cvnextgen_pod_memory
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Verification Service Pod Memory (Mi)
+          help_text: Memory for Verification Service pod
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "demo"}}1400{{repl else}}3000{{repl end}}'
+        - name: cv-nextgen_deployment_annotations
+          type: textarea
+          title: Verification Service Deployment Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to cv-nextgen service deployment
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'
+        - name: cv-nextgen_podspec_annotations
+          type: textarea
+          title: Verification Service Pod Spec Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to cv-nextgen service pod spec
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'
+        - name: cv-nextgen_labels
+          type: textarea
+          title: Verification Service Labels
+          help_text: |
+            Use this textarea to provide labels specific to cv-nextgen service
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'
+        - name: le-nexgen_config
+          type: heading
+          title: Learning Engine Configurations
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+        - name: le-nexgen_replica
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Learning Engine Replicas
+          help_text: Number of replicas for Learning Engine
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "production_ha"}}2{{repl else}}1{{repl end}}'
+        - name: le-nexgen_cpu
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Learning Engine CPU
+          help_text: Number of CPU for Learning Engine
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "demo"}}0.5{{repl else}}{{repl if ConfigOptionEquals "mode" "production_single"}}3{{repl else}}4{{repl end}}{{repl end}}'
+        - name: le-nexgen_memory
+          when: 'repl{{ ConfigOptionEquals "advanced_configuration" "1"}}'
+          title: Learning Engine Memory (Mi)
+          help_text: Memory for Learning Engine
+          type: text
+          default: '{{repl if ConfigOptionEquals "mode" "demo"}}512{{repl else}}{{repl if ConfigOptionEquals "mode" "production_single"}}4096{{repl else}}6132{{repl end}}{{repl end}}'
+        - name: le-nextgen_deployment_annotations
+          type: textarea
+          title: Learning Engine Deployment Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to  Learning Engine Deployment
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'
+        - name: le-nextgen_podspec_annotations
+          type: textarea
+          title: Learning Engine Pod Spec Annotations
+          help_text: |
+            Use this textarea to provide annotations specific to Learning Engine pod spec
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'
+        - name: le-nextgen_labels
+          type: textarea
+          title: Learning Engine Labels
+          help_text: |
+            Use this textarea to provide labels specific to  Learning Engine
+          when: '{{repl if (IsKurl) }}false{{repl else}}{{repl ConfigOptionEquals "advanced_configuration" "1"}}{{repl end}}'
+        

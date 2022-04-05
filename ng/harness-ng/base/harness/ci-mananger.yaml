@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ci-manager
+data:
+  CACHE_BACKEND: "REDIS"
+  CACHE_CONFIG_REDIS_SENTINELS: 'redis://redis-sentinel-harness-announce-0.harness:26379,redis://redis-sentinel-harness-announce-1.harness:26379,redis://redis-sentinel-harness-announce-2.harness:26379'
+  CACHE_CONFIG_SENTINEL_MASTER_NAME: "harness-redis"
+  CACHE_CONFIG_USE_SENTINEL: "true"
+  DEPLOY_MODE: KUBERNETES_ONPREM
+  NG_MANAGER_URL: '35.202.24.14/ng/api/'
+  MANAGER_TARGET: harness-manager:9879
+  MANAGER_AUTHORITY: default-authority.harness.io
+  GRPC_SERVER_PORT: "9979"
+  MANAGER_URL: '35.202.24.14/api/'
+  SCM_SERVICE_URI: "scm:8091"
+  LOG_SERVICE_ENDPOINT: '35.202.24.14/log-service/'
+  TI_SERVICE_ENDPOINT: '35.202.24.14/ti-service/'
+  ADDON_IMAGE: 'harness/ci-addon:release-97'
+  LE_IMAGE: 'harness/ci-lite-engine:release-34'
+  GIT_CLONE_IMAGE: 'harness/drone-git:1.0.6-rootless-linux-amd64'
+  DOCKER_PUSH_IMAGE: 'plugins/kaniko:1.3.1'
+  ECR_PUSH_IMAGE:  'plugins/kaniko-ecr:1.3.1'
+  GCR_PUSH_IMAGE: 'plugins/kaniko-gcr:1.3.1'
+  GCS_UPLOAD_IMAGE: 'plugins/gcs:1.2.4'
+  S3_UPLOAD_IMAGE: 'plugins/s3:1.0.3'
+  ARTIFACTORY_UPLOAD_IMAGE: 'plugins/artifactory:1.0.4'
+  GCS_CACHE_IMAGE: 'plugins/cache:1.3.5'
+  S3_CACHE_IMAGE: 'plugins/cache:1.3.5'
+  PMS_TARGET:  pipeline-service:12011
+  PMS_AUTHORITY:  default-authority.harness.io
+  LOGGING_LEVEL: 'INFO' 
+  EVENTS_FRAMEWORK_REDIS_URL: 'redis://localhost:6379'
+  EVENTS_FRAMEWORK_USE_SENTINEL: "true"
+  EVENTS_FRAMEWORK_SENTINEL_MASTER_NAME: 'harness-redis'
+  EVENTS_FRAMEWORK_REDIS_SENTINELS: 'redis://redis-sentinel-harness-announce-0.harness:26379,redis://redis-sentinel-harness-announce-1.harness:26379,redis://redis-sentinel-harness-announce-2.harness:26379'
+  SHOULD_CONFIGURE_WITH_PMS: "true"
+  ENABLE_DASHBOARD_TIMESCALE: "true"  
+  API_URL: '35.202.24.14/ng/#/'
+  MEMORY: '1000'
+  USE_REDIS_FOR_SDK_RESPONSE_EVENTS: "true"
+#   

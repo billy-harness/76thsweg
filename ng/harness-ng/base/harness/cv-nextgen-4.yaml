@@ -1,0 +1,18 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: cv-nextgen
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /cv/api/$2
+    kubernetes.io/ingress.class: 'harness'
+    kots.io/placeholder: 'true'
+    
+spec:
+  rules:
+    - http:
+        paths:
+          - backend:
+              serviceName: cv-nextgen
+              servicePort: 6060
+            path: /cv/api(/|$)(.*)
+      # 

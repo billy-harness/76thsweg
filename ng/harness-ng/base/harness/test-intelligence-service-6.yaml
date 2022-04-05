@@ -1,0 +1,27 @@
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ti-migration-release-46
+  annotations:
+    "kots.io/hook-delete-policy": "hook-succeeded, hook-failed"
+spec:
+  template:
+    spec:
+      containers:
+      - name: migrate
+        image: harness/ti-service-signed:release-46
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash", "-c", "/opt/harness/migrate.sh" ]
+        envFrom:
+        - secretRef:
+            name: ti-service
+        resources:
+          limits:
+            memory: 3024Mi
+            cpu: 1
+          requests:
+            memory: 3024Mi
+            cpu: 1
+      restartPolicy: Never
+

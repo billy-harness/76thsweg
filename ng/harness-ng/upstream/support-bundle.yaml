@@ -1,0 +1,96 @@
+apiVersion: troubleshoot.replicated.com/v1beta1
+kind: Collector
+metadata:
+  name: harness-collector
+spec:
+  collectors:
+    - clusterInfo: {}
+    - clusterResources: {}
+    - logs:
+        name: access-control
+        selector:
+          - app=access-control
+        namespace: '{{repl Namespace}}'
+        limits:
+          maxAge: 72h
+          maxLines: 10000
+    - logs:
+        name: change-data-capture
+        selector:
+          - app=change-data-capture
+        namespace: '{{repl Namespace}}'
+        limits:
+          maxAge: 72h
+          maxLines: 10000
+    - logs:
+        name: ci-manager
+        selector:
+          - app=ci-manager
+        namespace: '{{repl Namespace}}'
+        limits:
+          maxAge: 72h
+          maxLines: 10000
+    - logs:
+        name: log-service-minio
+        selector:
+          - app=log-service-minio
+        namespace: '{{repl Namespace}}'
+        limits:
+          maxAge: 72h
+          maxLines: 10000
+    - logs:
+        name: log-service
+        selector:
+          - app=log-service
+        namespace: '{{repl Namespace}}'
+        limits:
+          maxAge: 72h
+          maxLines: 10000
+    - logs:
+        name: next-gen-ui
+        selector:
+          - app=next-gen-ui
+        namespace: '{{repl Namespace}}'
+        limits:
+          maxAge: 72h
+          maxLines: 10000
+    - logs:
+        name: ng-manager
+        selector:
+          - app=ng-manager
+        namespace: '{{repl Namespace}}'
+        limits:
+          maxAge: 72h
+          maxLines: 10000   
+    - logs:
+        name: pipeline-service
+        selector:
+          - app=pipeline-service
+        namespace: '{{repl Namespace}}'
+        limits:
+          maxAge: 72h
+          maxLines: 10000   
+    - logs:
+        name: platform-service
+        selector:
+          - app=platform-service
+        namespace: '{{repl Namespace}}'
+        limits:
+          maxAge: 72h
+          maxLines: 10000   
+    - logs:
+        name: scm
+        selector:
+          - app=scm
+        namespace: '{{repl Namespace}}'
+        limits:
+          maxAge: 72h
+          maxLines: 10000
+    - logs:
+        name: ti-service
+        selector:
+          - app=ti-service
+        namespace: '{{repl Namespace}}'
+        limits:
+          maxAge: 72h
+          maxLines: 10000                                        

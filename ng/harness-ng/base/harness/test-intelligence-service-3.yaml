@@ -1,0 +1,17 @@
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ti-service
+  labels:
+    kots.io/placeholder: 'true'
+    
+spec:
+  type: ClusterIP
+  ports:
+  - name: ti-service
+    port: 8078
+    protocol: TCP
+    targetPort: 8078
+  selector:
+    app: ti-service

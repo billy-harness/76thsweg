@@ -1,0 +1,75 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: platform-service
+  labels:
+    app: platform-service
+    kots.io/placeholder: 'true'
+    
+  annotations:  
+    kots.io/placeholder: 'true'
+        
+spec:
+  progressDeadlineSeconds: 550
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: platform-service
+  template:
+    metadata:
+      labels:
+        app: platform-service
+        kots.io/placeholder: 'true'
+        
+      annotations:
+        kots.io/placeholder: 'true'
+                 
+    spec:
+# 
+      serviceAccountName: harness-default      
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: platform-service
+        image: harness/platform-service-signed:74410
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 65534
+          runAsNonRoot: true        
+        ports:
+        - name: http
+          containerPort: 9005
+          protocol: "TCP"     
+        resources:
+          limits:
+            memory: '512Mi'
+            cpu: '0.5'
+          requests:
+            memory: '512Mi'
+            cpu: '0.5'
+        envFrom:
+        - configMapRef:
+            name: platform-service
+        - secretRef:
+            name: platform-service
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 9005
+          initialDelaySeconds: 100
+          timeoutSeconds: 10
+          periodSeconds: 10
+          failureThreshold: 20
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 9005
+          initialDelaySeconds: 300
+          timeoutSeconds: 10
+          periodSeconds: 10
+          failureThreshold: 20   

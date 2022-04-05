@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  access-control
+  labels:
+    app:  access-control
+    kots.io/placeholder: 'true'
+    
+  annotations:  
+    kots.io/placeholder: 'true'
+        
+spec:
+  progressDeadlineSeconds: 720
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: access-control
+  template:
+    metadata:
+      labels:
+        app: access-control
+        kots.io/placeholder: 'true'
+        
+      annotations:
+        kots.io/placeholder: 'true'
+                 
+    spec:
+# 
+      serviceAccountName: harness-default    
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: access-control
+        image: harness/accesscontrol-service-signed:74400
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 65534
+          runAsNonRoot: true        
+        ports:
+        - name: http
+          containerPort: 9006
+          protocol: "TCP"     
+        resources:
+          limits:
+            memory: '512Mi'
+            cpu: '0.5'
+          requests:
+            memory: '512Mi'
+            cpu: '0.5'
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 9006
+          initialDelaySeconds: 200
+          timeoutSeconds: 20
+          periodSeconds: 10
+          failureThreshold: 40
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 9006
+          initialDelaySeconds: 200
+          timeoutSeconds: 20
+          periodSeconds: 10
+          failureThreshold: 40
+        envFrom:
+        - configMapRef:
+            name: access-control
+        - secretRef:
+            name: access-control      

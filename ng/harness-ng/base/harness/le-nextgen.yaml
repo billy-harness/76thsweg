@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: le-nextgen
+data:
+  https_port: "10800"
+  learning_env: on_prem
+  server_url: http://cv-nextgen:6060

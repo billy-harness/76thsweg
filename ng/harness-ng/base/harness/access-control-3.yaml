@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name:  access-control
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 9006
+    protocol: TCP
+    targetPort: 9006
+  selector:
+    app:  access-control
