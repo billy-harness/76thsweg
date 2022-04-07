@@ -95,7 +95,7 @@ data:
   MANAGER_AUTHORITY: default-authority.harness.io
   MANAGER_TARGET: harness-manager:9879
   MANAGER_URL: http://harness-url/api/
-  MEMORY: "2096"
+  MEMORY: "4096"
   NG_MANAGER_URL: http://harness-url/ng/api/
   PMS_AUTHORITY: default-authority.harness.io
   PMS_TARGET: pipeline-service:12011
@@ -416,6 +416,7 @@ data:
   LOCK_CONFIG_USE_SENTINEL: "true"
   LOGGING_LEVEL: INFO
   MANAGER_CLIENT_BASEURL: http://harness-url/api/
+  MEMORY: 3072m
   MOCK_ACCESS_CONTROL_SERVICE: "false"
   NG_MANAGER_CLIENT_BASEURL: http://harness-url/ng/api/
   PIPELINE_SERVICE_CLIENT_BASEURL: http://harness-url/pipeline/api/
@@ -458,7 +459,7 @@ data:
   LOGGING_LEVEL: INFO
   MANAGER_AUTHORITY: default-authority.harness.io
   MANAGER_TARGET: harness-manager:9879
-  MEMORY: 1024m
+  MEMORY: 2048m
   NG_MANAGER_BASE_URL: http://harness-url/ng/api/
   NG_MANAGER_GITSYNC_AUTHORITY: default-authority.harness.io
   NG_MANAGER_GITSYNC_TARGET: ng-manager:13002
@@ -1127,7 +1128,7 @@ spec:
             name: change-data-capture
         - secretRef:
             name: change-data-capture
-        image: proxy.replicated.com/proxy/harness-ng/harness/cdcdata-signed:74410
+        image: proxy.replicated.com/proxy/harness-ng/harness/cdcdata-signed:74413
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 10
@@ -1209,7 +1210,7 @@ spec:
             name: ci-manager
         - secretRef:
             name: ci-manager
-        image: proxy.replicated.com/proxy/harness-ng/harness/ci-manager-signed:74410
+        image: proxy.replicated.com/proxy/harness-ng/harness/ci-manager-signed:74413
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 20
@@ -1238,10 +1239,10 @@ spec:
         resources:
           limits:
             cpu: "1"
-            memory: 3072Mi
+            memory: 6192Mi
           requests:
             cpu: "1"
-            memory: 3072Mi
+            memory: 6192Mi
         securityContext:
           runAsNonRoot: true
           runAsUser: 65534
@@ -1297,7 +1298,7 @@ spec:
             name: cv-nextgen
         - secretRef:
             name: cv-nextgen
-        image: proxy.replicated.com/proxy/harness-ng/harness/cv-nextgen:74410
+        image: proxy.replicated.com/proxy/harness-ng/harness/cv-nextgen:74413
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 2
@@ -1701,7 +1702,7 @@ spec:
             name: ng-manager
         - secretRef:
             name: ng-manager
-        image: harness/ng-manager-signed:74410
+        image: harness/ng-manager-signed:74413
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 10
@@ -1791,7 +1792,7 @@ spec:
             name: pipeline-service
         - secretRef:
             name: pipeline-service
-        image: harness/pipeline-service-signed:74410
+        image: harness/pipeline-service-signed:74413
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 20
@@ -1880,7 +1881,7 @@ spec:
             name: platform-service
         - secretRef:
             name: platform-service
-        image: harness/platform-service-signed:74410
+        image: harness/platform-service-signed:74413
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 20
@@ -1906,10 +1907,10 @@ spec:
         resources:
           limits:
             cpu: "1"
-            memory: 3072Mi
+            memory: 4096Mi
           requests:
             cpu: "1"
-            memory: 3072Mi
+            memory: 4096Mi
         securityContext:
           runAsNonRoot: true
           runAsUser: 65534
@@ -2035,7 +2036,7 @@ spec:
             name: template-service
         - secretRef:
             name: template-service
-        image: proxy.replicated.com/proxy/harness-ng/harness/template-service-signed:74410
+        image: proxy.replicated.com/proxy/harness-ng/harness/template-service-signed:74413
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 20
@@ -2067,10 +2068,10 @@ spec:
         resources:
           limits:
             cpu: "0.5"
-            memory: 1400Mi
+            memory: 3000Mi
           requests:
             cpu: "0.5"
-            memory: 1400Mi
+            memory: 3000Mi
         securityContext:
           runAsNonRoot: true
           runAsUser: 65534
