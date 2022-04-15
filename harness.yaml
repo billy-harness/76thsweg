@@ -341,7 +341,7 @@ data:
   SERVER_PORT: "9090"
   SERVICE_ACC: /opt/harness/svc/service_acc.json
   UI_SERVER_URL: http://harness-url
-  VERSION: 1.0.74410
+  VERSION: 1.0.74413
   WATCHER_METADATA_URL: http://harness-url/storage/wingswatchers/watcherprod.txt
 kind: ConfigMap
 metadata:
@@ -2012,7 +2012,7 @@ spec:
             name: harness-manager-config
         - secretRef:
             name: harness-manager-config
-        image: harness/manager-signed:74410
+        image: harness/manager-signed:74413
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
@@ -2136,7 +2136,7 @@ spec:
       - envFrom:
         - configMapRef:
             name: ui
-        image: proxy.replicated.com/proxy/harness/harness/ui-signed:73701
+        image: proxy.replicated.com/proxy/harness/harness/ui-signed:73703
         imagePullPolicy: IfNotPresent
         name: ui
         ports:
@@ -2274,7 +2274,7 @@ spec:
       - envFrom:
         - configMapRef:
             name: ng-auth-ui
-        image: harness/ng-auth-ui-signed:0.33.2
+        image: harness/ng-auth-ui-signed:0.33.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 2
@@ -2353,7 +2353,7 @@ spec:
             name: verification-svc
         - secretRef:
             name: verification-svc
-        image: proxy.replicated.com/proxy/harness/harness/verification-service-signed:74410
+        image: proxy.replicated.com/proxy/harness/harness/verification-service-signed:74413
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 2
